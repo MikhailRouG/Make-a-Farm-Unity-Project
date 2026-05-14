@@ -5,12 +5,12 @@ public class PlayerPlacement : NetworkBehaviour
 {
     [SerializeField] private ItemDatabase db;
     private PlayerInteraction interaction;
+    private PlayerInventory _player;
     private Inventory _inventory;
 
     private int currentSeedId = -1;
-    private GameObject currentGhost;
     private ItemSeed _currentSeed;
-    private PlantCheckPosition _component;
+    private PlantCheckPosition currentGhost;
     private bool _canPlant;
     public bool _isPlanting { get; private set; }
 
@@ -18,6 +18,7 @@ public class PlayerPlacement : NetworkBehaviour
     {
         interaction = GetComponent<PlayerInteraction>();
         _inventory = GetComponent<Inventory>();
+        _player = GetComponent<PlayerInventory>();
         db.Init();
         _isPlanting = false;
         _canPlant = false;
@@ -25,11 +26,11 @@ public class PlayerPlacement : NetworkBehaviour
 
     private void OnEnable()
     {
-        _inventory.onUseItem += CmdConfirmPlacement;
+        _player.OnSelectedSlotChangedEvent += OnChangedSlot;
     }
     private void OnDisable()
     {
-        _inventory.onUseItem -= CmdConfirmPlacement;
+        _player.OnSelectedSlotChangedEvent -= OnChangedSlot;
     }
 
     private void Update()
@@ -37,7 +38,7 @@ public class PlayerPlacement : NetworkBehaviour
         if (currentGhost != null)
         {
             currentGhost.transform.position = interaction.LookPoint;
-            _canPlant = _component.CheckZone();
+            _canPlant = currentGhost.CheckZone();
         }
     }
     public void StartPlanting(int seedId)
@@ -48,18 +49,17 @@ public class PlayerPlacement : NetworkBehaviour
             _currentSeed = seeds;
             if(currentGhost != null) Destroy(currentGhost);
             currentGhost = Instantiate(_currentSeed.GhostObject);
-            _component = currentGhost.GetComponent<PlantCheckPosition>();
-            _component.Init(_currentSeed);
+            currentGhost.Init(_currentSeed);
             _isPlanting = true;
         }
     }
     [Command]
     public void CmdConfirmPlacement()
     {
+        this.enabled = false;
         if (_currentSeed == null || !_canPlant) return;
-
+        Destroy(currentGhost.gameObject);
         ServerConfirmPlacement(_currentSeed.Id, interaction.LookPoint);
-        Destroy(currentGhost);
         _currentSeed = null;
     }
     [Server]
@@ -67,16 +67,21 @@ public class PlayerPlacement : NetworkBehaviour
     {
         if (_inventory.HasItem(id))
         {
-            GameObject instance = Instantiate(_currentSeed.HarvestItem[0].Model, position, Quaternion.identity);
+            Plant i = Instantiate(_currentSeed.PlantStartObject, position, Quaternion.identity);
+            i.Init(netId, _currentSeed);
+            GameObject instance = i.gameObject;
             NetworkServer.Spawn(instance, connectionToClient);
-            if (_currentSeed.ConsumeOnUse) _inventory.TryRemoveItem(id, 1);
-            else NetworkServer.Destroy(instance);
+            if (!_inventory.TryRemoveItem(id, 1)) NetworkServer.Destroy(instance);
         }
     }
-    private void OnCancel()
+    private void OnChangedSlot(int i)
+    {
+
+    }
+    public void CancelPlacement()
     {
         if (currentGhost != null) DestroyImmediate(currentGhost);
+        this.enabled = false;
     }
-
 
 }

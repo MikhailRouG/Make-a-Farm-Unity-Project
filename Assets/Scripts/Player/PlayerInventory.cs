@@ -1,11 +1,13 @@
 using Mirror;
 using System;
+using UnityEditor.Rendering.LookDev;
 using UnityEngine;
 
 [RequireComponent(typeof(Inventory))]
 public class PlayerInventory : NetworkBehaviour
 {
     private Inventory _inventory;
+    private Player _player;
     [SerializeField] private ItemDatabase _itemDatabase;
 
     [SyncVar(hook = nameof(OnSelectedSlotChanged))]
@@ -16,6 +18,8 @@ public class PlayerInventory : NetworkBehaviour
     private void Awake()
     {
         _inventory = GetComponent<Inventory>();
+        _player = GetComponent<Player>();
+        _player.onUseItem += CmdUseSelectedItem;
     }
     private void OnSelectedSlotChanged(int oldIndex, int newIndex)
     {
@@ -66,6 +70,6 @@ public class PlayerInventory : NetworkBehaviour
     }
     public void OnEscape()
     {
-
+        _selectedSlotIndex = -1;
     }
 }

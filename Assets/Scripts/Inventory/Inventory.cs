@@ -10,7 +10,6 @@ public class Inventory : NetworkBehaviour
     public readonly SyncList<InventorySlot> Slots = new SyncList<InventorySlot>();
     public event Action OnInventoryChanged;
 
-    public Action onUseItem;
     public override void OnStartServer()
     {
         base.OnStartServer();
@@ -215,7 +214,7 @@ public class Inventory : NetworkBehaviour
 
             int addAmount = Mathf.Min(freeSpace, amount);
 
-            slot.Amount -= addAmount;
+            slot.Amount += addAmount;
             amount -= addAmount;
 
             Slots[i] = slot;

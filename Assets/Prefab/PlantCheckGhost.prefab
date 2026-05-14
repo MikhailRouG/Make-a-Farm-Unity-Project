@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4889357735956711329}
   - component: {fileID: 5517866692966445679}
   m_Layer: 2
-  m_Name: PlantStartPrefab
+  m_Name: PlantCheckGhost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

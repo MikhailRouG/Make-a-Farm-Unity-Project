@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Mirror;
+using System;
 
 public class Player : NetworkBehaviour
 {
@@ -10,13 +11,12 @@ public class Player : NetworkBehaviour
     private PlayerInputActions input;
     private PlayerMove move;
     private PlayerInteraction interaction;
-    private PlayerPlacement _placement;
     private PlayerInventory playerInventory;
-
+    private PlayerPlacement _placement;
     private bool jumpPressed;
     private bool interactPressed;
     private bool cursorTogglePressed;
-
+    public event Action onUseItem;
     private void Awake()
     {
         input = new PlayerInputActions();
@@ -26,9 +26,10 @@ public class Player : NetworkBehaviour
         playerInventory = GetComponent<PlayerInventory>();
         _placement = GetComponent<PlayerPlacement>();
     }
-
-    private void OnEnable()
+    public override void OnStartLocalPlayer()
     {
+        base.OnStartLocalPlayer();
+        if (!isLocalPlayer) return;
         input.Player.Enable();
 
         input.Player.Jump.performed += ctx => jumpPressed = true;
@@ -41,13 +42,32 @@ public class Player : NetworkBehaviour
 
         input.Player.UseItem.performed += OnUseItem;
         input.Player.Escape.performed += OnEscape;
+        input.Player.Plant.performed += OnPlant;
+    }
+    private void OnEnable()
+    {
+        if(!isLocalPlayer)return;
+        input.Player.Enable();
+
+        input.Player.Jump.performed += ctx => jumpPressed = true;
+        input.Player.Jump.canceled += ctx => jumpPressed = false;
+
+        input.Player.Interact.performed += OnInteract;
+
+        input.Player.Interact.performed += ctx => interactPressed = true;
+        input.Player.CursorVisable.performed += ctx => cursorTogglePressed = true;
+
+        input.Player.UseItem.performed += OnUseItem;
+        input.Player.Escape.performed += OnEscape;
+        input.Player.Plant.performed += OnPlant;
     }
 
     private void OnDisable()
     {
         input.Player.Interact.performed -= OnInteract;
         input.Player.UseItem.performed -= OnUseItem;
-
+        input.Player.Escape.performed -= OnEscape;
+        input.Player.Plant.performed -= OnPlant;
         input.Player.Disable();
     }
 
@@ -88,27 +108,17 @@ public class Player : NetworkBehaviour
     {
         if (!ctx.performed) return;
         if(playerInventory == null) return;
-        playerInventory.CmdUseSelectedItem();
+        onUseItem?.Invoke();
     }
 
     private void OnEscape(InputAction.CallbackContext ctx)
     {
         playerInventory.OnEscape();
+        if (_placement.enabled == true) _placement.CancelPlacement();
     }
 
-    public void Plant(int id)
+    private void OnPlant(InputAction.CallbackContext ctx)
     {
-        _placement.enabled = true;
-        _placement.StartPlanting(id);
-    }
-
-    public void PlantConfirm()
-    {
-        _placement.CmdConfirmPlacement();
-    }
-
-    public void PlantCancel()
-    {
-        _placement.enabled = false;
+        if (_placement.enabled == true) _placement.CmdConfirmPlacement();
     }
 }

@@ -26,9 +26,11 @@
             _slotsUI[i].Init(i);
             _slotsUI[i].Clicked += OnSlotClicked;
         }
-        inventory.OnInventoryChanged -= RefreshUI; 
-        inventory.OnInventoryChanged += RefreshUI;
+        _inventory.OnInventoryChanged -= RefreshUI;
+        _inventory.OnInventoryChanged += RefreshUI;
         RefreshUI();
+        _playerInventory.OnSelectedSlotChangedEvent -= SlotClear;
+        _playerInventory.OnSelectedSlotChangedEvent += SlotClear;
     }
     private void OnDestroy()
     {
@@ -36,20 +38,21 @@
         {
             _slotsUI[i].Clicked -= OnSlotClicked;
         }
+        _playerInventory.OnSelectedSlotChangedEvent -= SlotClear;
     }
     private void OnEnable()
     {
         if (_inventory == null)
             return;
         _inventory.OnInventoryChanged += RefreshUI;
-
+        _playerInventory.OnSelectedSlotChangedEvent += SlotClear;
     }
     private void OnDisable()
         {
         if (_inventory == null) return;
 
         _inventory.OnInventoryChanged -= RefreshUI;
-
+        _playerInventory.OnSelectedSlotChangedEvent -= SlotClear;
     }
         public void RefreshUI()
         {
@@ -95,5 +98,15 @@
         Debug.Log(_currentSlot);
     }
 
+    private void SlotClear(int i)
+    {
+        if (i != -1) return;
+        if (_currentSlot >= 0 && _currentSlot < _slotsUI.Count) { 
+                _slotsUI[_currentSlot].OnUnSelected();
+            Debug.Log("esc1");
+        }
+        _currentSlot = -1;
+        Debug.Log("esc");
+    }
 }
 
