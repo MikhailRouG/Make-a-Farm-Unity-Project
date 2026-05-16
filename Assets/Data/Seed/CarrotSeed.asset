@@ -19,7 +19,8 @@ MonoBehaviour:
   <IsStackable>k__BackingField: 1
   <MaxStackSize>k__BackingField: 32
   <ConsumeOnUse>k__BackingField: 0
-  <GhostObject>k__BackingField: {fileID: 8150041959076287445, guid: da049d9d83f75154e93c887f48d0e10e, type: 3}
+  <GhostObject>k__BackingField: {fileID: 5517866692966445679, guid: da049d9d83f75154e93c887f48d0e10e, type: 3}
+  <PlantStartObject>k__BackingField: {fileID: 2921874841248964185, guid: 8e38d98a4c572cd4d94e4112e9c29cdd, type: 3}
   <Stages>k__BackingField:
   - {fileID: 4830069918918255618, guid: 2e4b8508f7329ac4b92d489800ce38a5, type: 3}
   - {fileID: 4830069918918255618, guid: 75c7977e788894d4a9d4b5eec02df6f6, type: 3}
@@ -28,5 +29,5 @@ MonoBehaviour:
   - {fileID: 2520595524603225583, guid: 4ba1bb81785b6f344b31b0cbaa8c67d2, type: 3}
   <HarvestItem>k__BackingField:
   - {fileID: 11400000, guid: d9b23277d4e662a49ad06a92a8c7f5e1, type: 2}
-  <TimePerStage>k__BackingField: 5
+  <TimePerStage>k__BackingField: 3
   <harvestAction>k__BackingField: {fileID: 11400000, guid: 621793f4025d2eb40b747685f16d1089, type: 2}

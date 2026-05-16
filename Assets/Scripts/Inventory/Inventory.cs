@@ -1,17 +1,32 @@
 using System;
 using UnityEngine;
 using Mirror;
+using Zenject;
 public class Inventory : NetworkBehaviour
 {
     [Header("Settings")]
     [SerializeField] private int _maxSlots = 9;
-    [Header("References")]
-    [SerializeField] private ItemDatabase _itemDatabase;
+    private ItemDatabase _itemDatabase;
     public readonly SyncList<InventorySlot> Slots = new SyncList<InventorySlot>();
     public event Action OnInventoryChanged;
 
+
+    [Inject]
+    private void Construct(ItemDatabase itemDatabase)
+    {
+        _itemDatabase = itemDatabase;
+    }
+    private void CheckInjection()
+    {
+        if (_itemDatabase == null)
+        {
+            var container = ProjectContext.Instance.Container;
+            container.Inject(this);
+        }
+    }
     public override void OnStartServer()
     {
+        CheckInjection();
         base.OnStartServer();
 
         if (Slots.Count == 0)
@@ -25,6 +40,7 @@ public class Inventory : NetworkBehaviour
 
     public override void OnStartClient()
     {
+        CheckInjection();
         base.OnStartClient();
 
         Slots.Callback += OnSlotsChanged;

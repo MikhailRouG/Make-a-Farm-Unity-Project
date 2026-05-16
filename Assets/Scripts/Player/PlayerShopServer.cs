@@ -1,33 +1,30 @@
 using Mirror;
-using UnityEngine;
+using Zenject;
+using static ShopInstaller;
 
 public class PlayerShopServer : NetworkBehaviour
 {
-    [SerializeField] private ItemDatabase _database;
+     private ItemDatabase _database;
     private Inventory _inventory;
-
-    [SerializeField] private ShopBuilderUi _shopPrefab;
+    private ShopUiFactory _shopUiFactory;
+    [Inject]
+    public void Construct(ItemDatabase database, ShopUiFactory shopUiFactory)
+    {
+        _database = database;
+        _shopUiFactory = shopUiFactory;
+    }
     private void Awake()
     {
-        if (_inventory == null)
             _inventory = GetComponent<Inventory>();
     }
     public override void OnStartLocalPlayer()
     {
-        CreateShopUi();
-    }
-    private void CreateShopUi()
-    {
-        if (!isLocalPlayer)
-            return;
-
-        if (_shopPrefab == null)
+        var sceneContext = FindFirstObjectByType<SceneContext>();
+        if (sceneContext != null && sceneContext.Container != null)
         {
-            Debug.LogError("Shop prefab is missing", this);
-            return;
+            sceneContext.Container.Inject(this);
         }
-        ShopBuilderUi _shopView = Instantiate(_shopPrefab);
-        _shopView.Initialize(this);
+        _shopUiFactory.Create(this);
     }
 
     [Command]
@@ -39,15 +36,7 @@ public class PlayerShopServer : NetworkBehaviour
     [Server]
     private void TryBuyItem(int itemId)
     {
-        if (_database == null)
-        {
-            return;
-        }
-
-        if (_inventory == null)
-        {
-            return;
-        }
+        if (_database == null || _inventory == null) return;
         _inventory.TryAddItem(itemId);
     }
 }

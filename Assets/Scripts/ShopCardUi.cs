@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using Zenject;
 
 public class ShopCardUi : MonoBehaviour
 {
@@ -9,10 +10,16 @@ public class ShopCardUi : MonoBehaviour
     private ItemConfig _item;
     public event Action<int> OnClick;
 
+    [Inject]
+    public void Construct(ItemConfig item)
+    {
+        _item = item;
+    }
     private void Awake()
     {
         if (_button == null)
             _button = GetComponentInChildren<Button>();
+        _button.onClick.AddListener(OnClicked);
     }
 
     private void OnDestroy()
@@ -22,20 +29,12 @@ public class ShopCardUi : MonoBehaviour
     }
     public void Build(ItemConfig item)
     {
-        if (item == null)
+        if (item == null || _button == null)
         {
             gameObject.SetActive(false);
             return;
         }
         _item = item;
-        _button = GetComponentInChildren<Button>();
-        if (_button == null)
-        {
-            gameObject.SetActive(false);
-            return;
-        }
-        _button.onClick.RemoveListener(OnClicked);
-        _button.onClick.AddListener(OnClicked);
         if (_image == null)
             {
             gameObject.SetActive(false);
@@ -50,5 +49,5 @@ public class ShopCardUi : MonoBehaviour
             return;
         OnClick?.Invoke(_item.Id);
     }
+    public class Factory : PlaceholderFactory<ItemConfig, ShopCardUi> { }
 }
-

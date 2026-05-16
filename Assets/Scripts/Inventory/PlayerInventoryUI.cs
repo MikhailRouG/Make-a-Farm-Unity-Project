@@ -1,16 +1,30 @@
     using UnityEngine;
     using System.Collections.Generic;
     using UnityEngine.UI;
-
-    public class PlayerInventoryUI : MonoBehaviour
-    {
+using Zenject;
+public class PlayerInventoryUI : MonoBehaviour
+{
         private Inventory _inventory;
     private PlayerInventory _playerInventory;
     [SerializeField] private List<InventorySlotUI> _slotsUI;
-    [SerializeField] private ItemDatabase _itemDatabase;
+     private ItemDatabase _itemDatabase;
     private int _currentSlot = -1;
+    [Inject]
+    private void Construct(ItemDatabase itemDatabase)
+    {
+        _itemDatabase = itemDatabase;
+    }
+    private void CheckInjection()
+    {
+        if (_itemDatabase == null)
+        {
+            var container = ProjectContext.Instance.Container;
+            container.Inject(this);
+        }
+    }
     public void Init(Inventory inventory, PlayerInventory player)
     {
+        CheckInjection();
         _inventory = inventory;
         _playerInventory = player;
         if (_inventory == null || !_inventory.isLocalPlayer)

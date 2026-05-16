@@ -533,7 +533,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _slotsUI: []
-  _itemDatabase: {fileID: 11400000, guid: 7853e2012c1fb394d8ae2c631512ce7f, type: 2}
 --- !u!1 &6287809272658649692
 GameObject:
   m_ObjectHideFlags: 0

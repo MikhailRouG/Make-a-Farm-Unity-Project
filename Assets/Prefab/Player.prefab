@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 2489266193369401995}
   - component: {fileID: 8262415846739455726}
   - component: {fileID: 5527747375020119178}
+  - component: {fileID: -2948325138360910393}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -154,7 +155,6 @@ MonoBehaviour:
   syncDirection: 1
   syncMode: 0
   syncInterval: 0
-  _itemDatabase: {fileID: 11400000, guid: 7853e2012c1fb394d8ae2c631512ce7f, type: 2}
 --- !u!114 &8057924821400128257
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -172,7 +172,6 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   _maxSlots: 9
-  _itemDatabase: {fileID: 11400000, guid: 7853e2012c1fb394d8ae2c631512ce7f, type: 2}
 --- !u!114 &1487933487921715186
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -399,8 +398,23 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  _database: {fileID: 11400000, guid: 7853e2012c1fb394d8ae2c631512ce7f, type: 2}
-  _shopPrefab: {fileID: 6182915239581268118, guid: b9ba8e0213983444ebb9aab79a2496a6, type: 3}
+--- !u!114 &-2948325138360910393
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5661663425880787205}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08eca9f7688a0a24685b89133b020c8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Zenject::Zenject.GameObjectContext
+  _scriptableObjectInstallers: []
+  _monoInstallers: []
+  _installerPrefabs: []
+  _autoRun: 1
+  _kernel: {fileID: 0}
 --- !u!1 &7957212399244125454
 GameObject:
   m_ObjectHideFlags: 0

@@ -2,21 +2,36 @@ using Mirror;
 using System;
 using UnityEditor.Rendering.LookDev;
 using UnityEngine;
+using Zenject;
 
 [RequireComponent(typeof(Inventory))]
 public class PlayerInventory : NetworkBehaviour
 {
     private Inventory _inventory;
     private Player _player;
-    [SerializeField] private ItemDatabase _itemDatabase;
+     private ItemDatabase _itemDatabase;
 
     [SyncVar(hook = nameof(OnSelectedSlotChanged))]
     private int _selectedSlotIndex;
     public int SelectedSlotIndex => _selectedSlotIndex;
     public event Action<int> OnSelectedSlotChangedEvent;
 
+    [Inject]
+    private void Construct(ItemDatabase itemDatabase)
+    {
+        _itemDatabase = itemDatabase;
+    }
+    private void CheckInjection()
+    {
+        if (_itemDatabase == null)
+        {
+            var container = ProjectContext.Instance.Container;
+            container.Inject(this);
+        }
+    }
     private void Awake()
     {
+        CheckInjection();
         _inventory = GetComponent<Inventory>();
         _player = GetComponent<Player>();
         _player.onUseItem += CmdUseSelectedItem;
