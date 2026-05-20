@@ -16,7 +16,7 @@ public class TakeItem : NetworkBehaviour, IInteractable
         _plant = plant;
     }
     [Server]
-    public void Interact(NetworkIdentity interactor)
+    public void Interact(GameObject interactor)
     {
         Debug.Log("item");
         interactor.GetComponent<Inventory>().TryAddItem(_data.Id,1);

@@ -17,6 +17,7 @@ public class Player : NetworkBehaviour
     private bool interactPressed;
     private bool cursorTogglePressed;
     public event Action onUseItem;
+    public event Action onEsc;
     private void Awake()
     {
         input = new PlayerInputActions();
@@ -113,6 +114,7 @@ public class Player : NetworkBehaviour
 
     private void OnEscape(InputAction.CallbackContext ctx)
     {
+        onEsc?.Invoke();
         playerInventory.OnEscape();
         if (_placement.enabled == true) _placement.CancelPlacement();
     }

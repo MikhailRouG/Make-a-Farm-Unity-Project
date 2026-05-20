@@ -18,7 +18,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &9147321928788538290
 RectTransform:
   m_ObjectHideFlags: 0
@@ -162,7 +162,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &8181983644237182496
 RectTransform:
   m_ObjectHideFlags: 0
@@ -262,7 +262,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &5520283529747573299
 RectTransform:
   m_ObjectHideFlags: 0
@@ -506,8 +506,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21cbb32989c5cb54e95f98a8d65fbdd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopBuilderUi
-  _database: {fileID: 11400000, guid: 7853e2012c1fb394d8ae2c631512ce7f, type: 2}
-  _itemCard: {fileID: 4312934520185469793, guid: fbc32931acbd9d947b564baa41de1224, type: 3}
   _cardParent: {fileID: 8181983644237182496}
 --- !u!1 &4044037390472332512
 GameObject:

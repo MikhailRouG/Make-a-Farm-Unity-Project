@@ -1,6 +1,7 @@
 ﻿using Mirror;
 using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlayerInteraction : NetworkBehaviour
 {
@@ -41,6 +42,7 @@ public class PlayerInteraction : NetworkBehaviour
     }
     public void Interaction(Ray ray)
     {
+        if(CheckMouseOnUi()) return;
         Debug.DrawRay(ray.origin, ray.direction * interactDistance, Color.green);
         if (Physics.Raycast(ray, out RaycastHit hit, interactDistance))
         {
@@ -77,47 +79,42 @@ public class PlayerInteraction : NetworkBehaviour
 
     public void TryInteract()
     {
-        if (currentTarget == null) return;
-
         if (currentTarget is UnityEngine.Object unityObj && unityObj == null)
         {
             currentTarget = null;
             return;
         }
 
-
-        NetworkIdentity targetIdentity = GetNetworkIdentity(currentTarget);
-
-        if (targetIdentity == null)
+        if (currentTarget is Component component)
         {
-            currentTarget = null;
-            return;
+            currentTarget.Interact(gameObject);
+
+            CmdVerifyInteraction(component.transform.position);
         }
 
-        CmdInteract(targetIdentity);
         currentTarget = null;
     }
 
-    private NetworkIdentity GetNetworkIdentity(IInteractable interactable)
-    {
-        if (interactable is Component component)
-            return component.GetComponent<NetworkIdentity>();
-
-        return null;
-    }
     [Command]
-    private void CmdInteract(NetworkIdentity target)
+    private void CmdVerifyInteraction(Vector3 targetPosition)
     {
-        if (target == null) return;
-
-        float distance = Vector3.Distance(transform.position, target.transform.position);
+        float distance = Vector3.Distance(transform.position, targetPosition);
 
         if (distance > interactDistance + 0.5f)
-            return;
-
-        if (target.TryGetComponent<IInteractable>(out var interactable))
         {
-            interactable.Interact(netIdentity);
+            Debug.LogWarning($"[Anti-Cheat] Player tried to interact too far away! Distance: {distance}");
+            return;
         }
+
+    }
+
+    private bool CheckMouseOnUi()
+    {
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+        {
+            ClearTarget();
+            return true;
+        }
+        return false;
     }
 }

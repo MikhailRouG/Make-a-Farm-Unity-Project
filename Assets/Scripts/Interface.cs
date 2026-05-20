@@ -1,7 +1,5 @@
-using Mirror;
-
 public interface IInteractable
 {
     string InteractionPrompt { get; }
-     void Interact(NetworkIdentity interactor);
+     void Interact(UnityEngine.GameObject interactor);
 }

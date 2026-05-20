@@ -1,32 +1,24 @@
 using Mirror;
 using Zenject;
-using static ShopInstaller;
 
 public class PlayerShopServer : NetworkBehaviour
 {
      private ItemDatabase _database;
     private Inventory _inventory;
-    private ShopUiFactory _shopUiFactory;
     [Inject]
-    public void Construct(ItemDatabase database, ShopUiFactory shopUiFactory)
+    public void Construct(ItemDatabase database)
     {
         _database = database;
-        _shopUiFactory = shopUiFactory;
     }
     private void Awake()
     {
-            _inventory = GetComponent<Inventory>();
-    }
-    public override void OnStartLocalPlayer()
-    {
-        var sceneContext = FindFirstObjectByType<SceneContext>();
-        if (sceneContext != null && sceneContext.Container != null)
+        if (_database == null)
         {
-            sceneContext.Container.Inject(this);
+            var container = ProjectContext.Instance.Container;
+            container.Inject(this);
         }
-        _shopUiFactory.Create(this);
+        _inventory = GetComponent<Inventory>();
     }
-
     [Command]
     public void CmdBuyItem(int itemId)
     {
@@ -36,7 +28,17 @@ public class PlayerShopServer : NetworkBehaviour
     [Server]
     private void TryBuyItem(int itemId)
     {
-        if (_database == null || _inventory == null) return;
+        if (_database == null)
+        {
+            UnityEngine.Debug.LogError("[SERVER] Ошибка покупки: _database равен null на сервере!");
+            return;
+        }
+
+        if (_inventory == null)
+        {
+            UnityEngine.Debug.LogError("[SERVER] Ошибка покупки: Компонент Inventory не найден!");
+            return;
+        }
         _inventory.TryAddItem(itemId);
     }
 }

@@ -1,37 +1,50 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Mirror;
 using Zenject;
 public class ShopBuilderUi : MonoBehaviour
 {
     private PlayerShopServer _playerShopServer;
-   private ItemDatabase _database;
+    private ItemDatabase _database;
     private ShopCardUi.Factory _cardFactory;
     private List<ShopCardUi> _cards = new() ;
     [SerializeField] private Transform _cardParent;
 
+
     [Inject]
-    public void Construct(PlayerShopServer playerShopServer, ItemDatabase database, ShopCardUi.Factory cardFactory)
+    public void Construct( ItemDatabase database, ShopCardUi.Factory cardFactory)
     {
-        _playerShopServer = playerShopServer;
         _database = database;
+        if (_database == null)
+        {
+            Debug.LogError("[ShopBuilderUi] _database равен null!");
+        }
         _cardFactory = cardFactory;
+        Debug.Log($"[ShopBuilderUi] Инициализирован! ID объекта: {GetInstanceID()}. База: {(_database != null)}");
     }
-    private void OnEnable()
+    public void OpenShop(PlayerShopServer buyer)
     {
-        if (_database != null)
-            BuildShop();
+        _playerShopServer = buyer;
+        gameObject.SetActive(true);
+        BuildShop(); 
     }
-    private void OnDisable()
+    public void CloseShop()
     {
         ClearShop();
+        _playerShopServer = null;
+        gameObject.SetActive(false);
     }
     private void BuildShop()
     {
+        ClearShop();
+        if (_database == null)
+        {
+            Debug.LogError("[ShopBuilderUi] _database равен null!");
+            return;
+        }
         var items = _database.GetAllItem();
         foreach (var item in items)
         {
-            ShopCardUi card = _cardFactory.Create(item);
+            ShopCardUi card = _cardFactory.Create();
             card.transform.SetParent(_cardParent, false);
             card.Build(item);
             card.OnClick += OnSelectedItem;
@@ -50,6 +63,7 @@ public class ShopBuilderUi : MonoBehaviour
     }
     public void OnSelectedItem(int id)
     {
+        if (_playerShopServer == null) return;
         _playerShopServer.CmdBuyItem(id);
     }
 }

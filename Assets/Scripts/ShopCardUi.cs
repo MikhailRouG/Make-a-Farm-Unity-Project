@@ -5,20 +5,13 @@ using Zenject;
 
 public class ShopCardUi : MonoBehaviour
 {
-    private Button _button;
+    [SerializeField] private Button _button;
     [SerializeField] private Image _image;
     private ItemConfig _item;
     public event Action<int> OnClick;
 
-    [Inject]
-    public void Construct(ItemConfig item)
-    {
-        _item = item;
-    }
     private void Awake()
     {
-        if (_button == null)
-            _button = GetComponentInChildren<Button>();
         _button.onClick.AddListener(OnClicked);
     }
 
@@ -49,5 +42,5 @@ public class ShopCardUi : MonoBehaviour
             return;
         OnClick?.Invoke(_item.Id);
     }
-    public class Factory : PlaceholderFactory<ItemConfig, ShopCardUi> { }
+    public class Factory : PlaceholderFactory<ShopCardUi> { }
 }

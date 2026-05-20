@@ -14,7 +14,7 @@ public class Door : NetworkBehaviour, IInteractable
         boxCollider = GetComponent<BoxCollider>();
     }
     [Server]
-    public void Interact(NetworkIdentity interactor)
+    public void Interact(GameObject interactor)
     {
         isOpen = !isOpen;
     }

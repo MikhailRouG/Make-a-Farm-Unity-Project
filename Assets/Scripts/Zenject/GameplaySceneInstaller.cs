@@ -7,6 +7,7 @@ public class GameplaySceneInstaller : MonoInstaller
 
     public override void InstallBindings()
     {
-        Container.BindInstance(_itemDatabase).AsSingle().NonLazy(); ;
+        //   Container.BindInstance(_itemDatabase).AsSingle().NonLazy(); ;
+        Container.Bind<ItemDatabase>().FromInstance(_itemDatabase).AsSingle();
     }
 }
