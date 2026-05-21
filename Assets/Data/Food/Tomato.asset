@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <Id>k__BackingField: 202
   <Name>k__BackingField: Tomato
-  <Icon>k__BackingField: {fileID: 21300000, guid: 9f8a859641e2ae8459c62169c9428df9, type: 3}
+  <Icon>k__BackingField: {fileID: 21300000, guid: 218253ff9c7ae66478a32e2a28cf15f6, type: 3}
   <Model>k__BackingField: {fileID: 1916844479562850640, guid: e486fea7231b2b44c8324ee0ec31068b, type: 3}
   <IsStackable>k__BackingField: 0
   <MaxStackSize>k__BackingField: 32

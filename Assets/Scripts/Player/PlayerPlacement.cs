@@ -68,9 +68,9 @@ public class PlayerPlacement : NetworkBehaviour
         if (_inventory.HasItem(id))
         {
             Plant i = Instantiate(_currentSeed.PlantStartObject, position, Quaternion.identity);
-            i.Init(netId, _currentSeed);
             GameObject instance = i.gameObject;
             NetworkServer.Spawn(instance, connectionToClient);
+            i.Init(netId, _currentSeed);
             if (!_inventory.TryRemoveItem(id, 1)) NetworkServer.Destroy(instance);
         }
     }

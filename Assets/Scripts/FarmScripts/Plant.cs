@@ -1,98 +1,101 @@
-using Castle.Core.Internal;
 using Mirror;
-using System.Linq;
+using System.Collections;
 using UnityEngine;
 
 public class Plant : NetworkBehaviour
 {
-    [SyncVar] private uint ownerNetId;
-    private ItemSeed itemSeed;
+    [SyncVar(hook = nameof(OnSeedSynced))]
+    private ItemSeed _seed;
+
     [SyncVar(hook = nameof(OnStageChanged))]
-    private int stageIndex;
-    [SyncVar] private float randomedWeight;
+    private int _stageIndex;
 
-    private bool isBlockedCached;
-    private float stageTimer;
-    private GameObject currentVisual;
+    [SyncVar] private uint _ownerNetId;
 
-    private void EnsureSeedData()
-    {
-        if (itemSeed == null)
-        {
-            return;
-            itemSeed = Resources.Load<ItemSeed>($"Seeds/{itemSeed.Name}");
-        }
-    }
+    private GameObject _currentVisual;
+    private Coroutine _growCoroutine;
     public override void OnStartClient()
     {
         base.OnStartClient();
-        OnStageChanged(0, stageIndex);
+        if (_seed != null)
+        {
+            UpdateVisual(_stageIndex);
+        }
     }
     public void Init(uint ownerId, ItemSeed item)
     {
-        ownerNetId = ownerId;
-        itemSeed = item;
-        randomedWeight = Random.Range(0.5f, 1.5f);
-        ItemConfig[] config = item.HarvestItem;
-        transform.localScale = new Vector3(randomedWeight, randomedWeight, randomedWeight);
-        itemSeed = item;
-
-        stageIndex = 0;
-        stageTimer = 0f;
-        SpawnStageServer();
-    }
-
-    private void Update()
-    {
         if (!isServer) return;
-        Grow();
+        _ownerNetId = ownerId;
+        _seed = item;
+        _stageIndex = 0;
+        if (_growCoroutine != null) StopCoroutine(_growCoroutine);
+        _growCoroutine = StartCoroutine(GrowRoutine());
+
+        UpdateVisual(_stageIndex);
     }
-
-
-    private void Grow()
+    private IEnumerator GrowRoutine()
     {
-        if (itemSeed == null || itemSeed.Stages.Length == 0) return;
-        if (stageIndex >= itemSeed.Stages.Length - 1) return;
-        stageTimer += Time.deltaTime;
-
-        if (stageTimer >= itemSeed.TimePerStage && stageIndex < itemSeed.Stages.Length - 1)
+        while (_seed != null && _stageIndex < _seed.Stages.Length - 1)
         {
-            stageIndex++;
-            stageTimer = 0f;
-            SpawnStageServer();
-            OnStageChanged(stageIndex, stageIndex);
-            Debug.Log(stageIndex);
-        }
-    }
-    private void SpawnStageServer()
-    {
-        if (stageIndex >= itemSeed.Stages.Length - 1)
-        {
-            if (!GetComponent<TakeItem>())
+            yield return new WaitForSeconds(_seed.TimePerStage);
+            if (_seed == null)
             {
-                gameObject.AddComponent<TakeItem>().Init(ownerNetId, itemSeed.HarvestItem[0], this);
+                Debug.LogError($"[Plant] Cannot grow! Either _seed is null on GameObject: {gameObject.name}", this);
+                Debug.LogError(_stageIndex);
+                yield break;
             }
+
+            _stageIndex++;
+            UpdateVisual(_stageIndex);
         }
     }
-
-    public void OnTaking()
+    private void UpdateVisual(int stage)
     {
-        itemSeed.harvestAction.Harvest(ownerNetId,this,itemSeed);
+        if (_seed == null || _seed.Stages == null || stage >= _seed.Stages.Length) return;
+
+        if (_currentVisual != null)
+            Destroy(_currentVisual);
+        if (stage >= _seed.Stages.Length - 1 && isServer)
+        {
+            OnLastStage();
+            return;
+        }
+        _currentVisual = Instantiate(
+            _seed.Stages[stage],
+            transform.position,
+            Quaternion.identity,
+            transform
+        );
     }
     private void OnStageChanged(int oldStage, int newStage)
     {
-        EnsureSeedData();
-        if (itemSeed == null) return;
-        if (currentVisual != null)
-            Destroy(currentVisual);
-        if (newStage < itemSeed.Stages.Length)
+        if (!isServer)
         {
-            currentVisual = Instantiate(
-            itemSeed.Stages[newStage],
-            transform.position,
-            Quaternion.identity,
-            transform);
+            UpdateVisual(newStage);
         }
+    }
+    private void OnLastStage()
+    {
+       GameObject obj =  Instantiate(
+           _seed.Stages[_seed.Stages.Length - 1],
+           transform.position,
+           Quaternion.identity
+       );
+        NetworkServer.Spawn( obj );
+        if (obj.TryGetComponent<IHarvestable>(out IHarvestable component))
+            {
+                component.StartHarvesting(_ownerNetId,_seed);
+            NetworkServer.Destroy(gameObject);
+            }
+        
+    }
+
+    private void OnSeedSynced(ItemSeed oldSeed, ItemSeed newSeed)
+    {
+    }
+    private void OnDestroy()
+    {
+        if (_growCoroutine != null) StopCoroutine(_growCoroutine);
     }
 }
 

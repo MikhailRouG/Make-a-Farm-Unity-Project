@@ -10,9 +10,6 @@ public class ItemSeed : ItemConfig
     [field: SerializeField] public ItemConfig[] HarvestItem { get; private set; }
     [field: SerializeField] public float TimePerStage { get; private set; } = 5f;
 
-[Header("Plant")]
-    [field: SerializeField] public HarvestAction harvestAction { get; private set; }
-
     public override bool UseServer(
         NetworkIdentity owner,
         InventorySlot slot)
