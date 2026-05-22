@@ -57,7 +57,7 @@ public class PlayerPlacement : NetworkBehaviour
     public void CmdConfirmPlacement()
     {
         this.enabled = false;
-        if (_currentSeed == null || !_canPlant) return;
+        if ( !_canPlant) return;
         Destroy(currentGhost.gameObject);
         ServerConfirmPlacement(_currentSeed.Id, interaction.LookPoint);
         _currentSeed = null;

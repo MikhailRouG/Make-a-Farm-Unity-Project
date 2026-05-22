@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 public class PlayerMove : NetworkBehaviour
 {
     [Header("Camera Settings")]
+    [SerializeField] private CinemachineCamera virtualCamera;
     private CinemachineThirdPersonFollow cameraSetting;
     [SerializeField] private Transform _cameraTrackTrnsform;
     [SerializeField] private float mouseSensitivity = 100f;
@@ -40,13 +41,34 @@ public class PlayerMove : NetworkBehaviour
     {
         controller = GetComponent<CharacterController>();
         animator = GetComponentInChildren<Animator>();
-        cameraSetting = GetComponentInChildren<CinemachineThirdPersonFollow>();
         xRotation = 0;
         yRotation = 0;
     }
+    public override void OnStartLocalPlayer()
+    {
+        base.OnStartLocalPlayer();
+        if (Camera.main != null)
+        {
+            cameraTransform = Camera.main.transform;
+        }
+        if (virtualCamera == null)
+        {
+            virtualCamera = GetComponentInChildren<CinemachineCamera>(true);
+        }
+        if (virtualCamera != null)
+        {
+            virtualCamera.gameObject.SetActive(true);
+            cameraSetting = virtualCamera.GetComponent<CinemachineThirdPersonFollow>();
 
+            if (cameraSetting == null)
+            {
+                Debug.LogError($"[{gameObject.name}] На виртуальной камере не добавлен компонент CinemachineThirdPersonFollow!");
+            }
+        }
+    }
     public void HandleMove(Vector2 direction, bool isRunning)
     {
+        if (!isLocalPlayer || !controller.enabled || cameraTransform == null) return;
         if (!controller.enabled) return;
 
         Vector2 input = direction;
@@ -74,6 +96,7 @@ public class PlayerMove : NetworkBehaviour
 
     public void HandleGravityAndJump(bool jumpPressed)
     {
+        if (!isLocalPlayer) return;
         if (controller.isGrounded)
         {
             if (yVelocity < 0)
@@ -91,6 +114,7 @@ public class PlayerMove : NetworkBehaviour
 
     public void HandleCamera(Vector2 look, float zoom)
     {
+        if (!isLocalPlayer) return;
         float mouseX = look.x * mouseSensitivity * Time.deltaTime;
         float mouseY = look.y * mouseSensitivity * Time.deltaTime;
 

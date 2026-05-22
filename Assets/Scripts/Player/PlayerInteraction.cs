@@ -1,4 +1,5 @@
 ﻿using Mirror;
+using Mirror.Examples.Common;
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,7 +7,7 @@ using UnityEngine.EventSystems;
 public class PlayerInteraction : NetworkBehaviour
 {
     [Header("References")]
-    [SerializeField] private Camera playerCamera;
+     private Camera _playerCamera;
     [SerializeField] private Transform rayOrigin;
 
     [Header("Settings")]
@@ -23,25 +24,29 @@ public class PlayerInteraction : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
-        if (playerCamera == null)
-            playerCamera = Camera.main;
-
+        if (_playerCamera == null)
+        {
+            _playerCamera =FindAnyObjectByType<Camera>();   
+        }
         if (rayOrigin == null)
             rayOrigin = transform;
     }
 
     public void InteractionByForward()
     {
-        Ray ray = new Ray(rayOrigin.position, playerCamera.transform.forward);
+        if (!isLocalPlayer || _playerCamera == null) return;
+        Ray ray = new Ray(rayOrigin.position, _playerCamera.transform.forward);
         Interaction(ray);
     }
     public void InteractionByCursor()
     {
-        Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
+        if (!isLocalPlayer || _playerCamera == null) return;
+        Ray ray = _playerCamera.ScreenPointToRay(Input.mousePosition);
         Interaction(ray);
     }
     public void Interaction(Ray ray)
     {
+        Debug.Log("sas");
         if(CheckMouseOnUi()) return;
         Debug.DrawRay(ray.origin, ray.direction * interactDistance, Color.green);
         if (Physics.Raycast(ray, out RaycastHit hit, interactDistance))
@@ -56,11 +61,6 @@ public class PlayerInteraction : NetworkBehaviour
                     HasTarget = true;
                     OnHasInteraction?.Invoke(currentTarget.InteractionPrompt);
                 }
-                return;
-            }
-            else if (HasTarget)
-            {
-                ClearTarget();
                 return;
             }
         }
@@ -79,6 +79,7 @@ public class PlayerInteraction : NetworkBehaviour
 
     public void TryInteract()
     {
+        if (!isLocalPlayer || currentTarget == null) return;
         if (currentTarget is UnityEngine.Object unityObj && unityObj == null)
         {
             currentTarget = null;
@@ -87,25 +88,28 @@ public class PlayerInteraction : NetworkBehaviour
 
         if (currentTarget is Component component)
         {
-            currentTarget.Interact(gameObject);
-
-            CmdVerifyInteraction(component.transform.position);
+            if (component.TryGetComponent<NetworkIdentity>(out NetworkIdentity identity))
+            {
+                CmdExecuteInteraction(identity);
+            }
+            else
+            {
+                currentTarget.Interact(gameObject);
+            }
         }
 
         currentTarget = null;
     }
 
     [Command]
-    private void CmdVerifyInteraction(Vector3 targetPosition)
+    private void CmdExecuteInteraction(NetworkIdentity targetIdentity)
     {
-        float distance = Vector3.Distance(transform.position, targetPosition);
+        float distance = Vector3.Distance(transform.position, targetIdentity.transform.position);
 
-        if (distance > interactDistance + 0.5f)
+        if (targetIdentity.TryGetComponent<IInteractable>(out IInteractable serverTarget))
         {
-            Debug.LogWarning($"[Anti-Cheat] Player tried to interact too far away! Distance: {distance}");
-            return;
+            serverTarget.Interact(gameObject);
         }
-
     }
 
     private bool CheckMouseOnUi()

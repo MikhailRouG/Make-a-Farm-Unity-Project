@@ -65,11 +65,14 @@ public class Player : NetworkBehaviour
 
     private void OnDisable()
     {
-        input.Player.Interact.performed -= OnInteract;
-        input.Player.UseItem.performed -= OnUseItem;
-        input.Player.Escape.performed -= OnEscape;
-        input.Player.Plant.performed -= OnPlant;
-        input.Player.Disable();
+        if (isLocalPlayer && input != null)
+        {
+            input.Player.Interact.performed -= OnInteract;
+            input.Player.UseItem.performed -= OnUseItem;
+            input.Player.Escape.performed -= OnEscape;
+            input.Player.Plant.performed -= OnPlant;
+            input.Player.Disable();
+        }
     }
 
     private void Update()

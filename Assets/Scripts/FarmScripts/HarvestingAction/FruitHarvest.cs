@@ -11,7 +11,7 @@ public class FruitHarvest : NetworkBehaviour, IHarvestable
     private uint _ownerId;
     private ItemSeed _seed;
 
-    private void OnValidate()
+    private void Awake()
     {
         if (_stem == null) return;
         _fruitPoint ??= _stem.GetComponentsInChildren<Transform>();
