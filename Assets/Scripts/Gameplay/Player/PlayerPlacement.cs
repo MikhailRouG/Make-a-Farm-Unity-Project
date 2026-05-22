@@ -19,7 +19,6 @@ public class PlayerPlacement : NetworkBehaviour
         interaction = GetComponent<PlayerInteraction>();
         _inventory = GetComponent<Inventory>();
         _player = GetComponent<PlayerInventory>();
-        db.Init();
         _isPlanting = false;
         _canPlant = false;
     }
@@ -35,6 +34,7 @@ public class PlayerPlacement : NetworkBehaviour
 
     private void Update()
     {
+        if (!isLocalPlayer || !_isPlanting) return;
         if (currentGhost != null)
         {
             currentGhost.transform.position = interaction.LookPoint;
@@ -43,6 +43,7 @@ public class PlayerPlacement : NetworkBehaviour
     }
     public void StartPlanting(int seedId)
     {
+        if (!isLocalPlayer) return;
         var config = db.Get(seedId);
         if (config is ItemSeed seeds)
         {
@@ -53,14 +54,26 @@ public class PlayerPlacement : NetworkBehaviour
             _isPlanting = true;
         }
     }
-    [Command]
-    public void CmdConfirmPlacement()
+
+    public void ConfirmPlacement()
     {
-        this.enabled = false;
-        if ( !_canPlant) return;
-        Destroy(currentGhost.gameObject);
+        if (!isLocalPlayer || !_isPlanting) return;
+        if (!_canPlant)
+        {
+            CleanUpGhost();
+            return;
+        }
         ServerConfirmPlacement(_currentSeed.Id, interaction.LookPoint);
-        _currentSeed = null;
+        CleanUpGhost();
+    }
+    [Command]
+    private void CmdConfirmPlacement(int seedId, Vector3 spawnPosition)
+    {
+        var config = db.Get(seedId);
+        if (config is ItemSeed seedConfig)
+        {
+            ServerConfirmPlacement(seedConfig.Id, spawnPosition);
+        }
     }
     [Server]
     private void ServerConfirmPlacement(int id, Vector3 position)
@@ -71,7 +84,10 @@ public class PlayerPlacement : NetworkBehaviour
             GameObject instance = i.gameObject;
             NetworkServer.Spawn(instance, connectionToClient);
             i.Init(netId, _currentSeed);
-            if (!_inventory.TryRemoveItem(id, 1)) NetworkServer.Destroy(instance);
+            if (!_inventory.TryRemoveItem(id, 1))
+            {
+                NetworkServer.Destroy(instance);
+            }
         }
     }
     private void OnChangedSlot(int i)
@@ -80,8 +96,18 @@ public class PlayerPlacement : NetworkBehaviour
     }
     public void CancelPlacement()
     {
-        if (currentGhost != null) DestroyImmediate(currentGhost);
+        if (currentGhost != null) Destroy(currentGhost);
         this.enabled = false;
     }
-
+    private void CleanUpGhost()
+    {
+        if (currentGhost != null)
+        {
+            Destroy(currentGhost.gameObject);
+            currentGhost = null;
+        }
+        _currentSeed = null;
+        _isPlanting = false;
+        _canPlant = false;
+    }
 }

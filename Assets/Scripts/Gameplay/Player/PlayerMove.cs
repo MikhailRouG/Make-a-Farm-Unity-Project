@@ -1,26 +1,9 @@
 using Mirror;
-using Unity.Cinemachine;
 using UnityEngine;
-using UnityEngine.InputSystem;
-
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMove : NetworkBehaviour
 {
-    [Header("Camera Settings")]
-    [SerializeField] private CinemachineCamera virtualCamera;
-    private CinemachineThirdPersonFollow cameraSetting;
-    [SerializeField] private Transform _cameraTrackTrnsform;
-    [SerializeField] private float mouseSensitivity = 100f;
-    [SerializeField] private float _zoomSpeed = 50f;
-    [SerializeField] private float clampAngle = 80f;
-
-    private float xRotation;
-    private float yRotation;
-    private InputAction lookAction;
-
-    [Header("References")]
     [SerializeField] private Transform cameraTransform;
-    [SerializeField] private Transform model;
     [Header("Movement Settings")]
     [SerializeField] private float speed = 5f;
     [SerializeField] private float shiftSpeed = 7f;
@@ -41,8 +24,6 @@ public class PlayerMove : NetworkBehaviour
     {
         controller = GetComponent<CharacterController>();
         animator = GetComponentInChildren<Animator>();
-        xRotation = 0;
-        yRotation = 0;
     }
     public override void OnStartLocalPlayer()
     {
@@ -51,18 +32,12 @@ public class PlayerMove : NetworkBehaviour
         {
             cameraTransform = Camera.main.transform;
         }
-        if (virtualCamera == null)
+        else
         {
-            virtualCamera = GetComponentInChildren<CinemachineCamera>(true);
-        }
-        if (virtualCamera != null)
-        {
-            virtualCamera.gameObject.SetActive(true);
-            cameraSetting = virtualCamera.GetComponent<CinemachineThirdPersonFollow>();
-
-            if (cameraSetting == null)
+            Camera systemCam = FindFirstObjectByType<Camera>();
+            if (systemCam != null)
             {
-                Debug.LogError($"[{gameObject.name}] На виртуальной камере не добавлен компонент CinemachineThirdPersonFollow!");
+                cameraTransform = systemCam.transform;
             }
         }
     }
@@ -70,7 +45,6 @@ public class PlayerMove : NetworkBehaviour
     {
         if (!isLocalPlayer || !controller.enabled || cameraTransform == null) return;
         if (!controller.enabled) return;
-
         Vector2 input = direction;
 
         Vector3 forward = cameraTransform.forward;
@@ -86,7 +60,7 @@ public class PlayerMove : NetworkBehaviour
         if (moveInput.sqrMagnitude > 0.01f)
         {
             Quaternion targetRot = Quaternion.LookRotation(moveInput, Vector3.up);
-            model.rotation = Quaternion.Slerp(model.rotation, targetRot, rotationSpeed * Time.deltaTime);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
         }
 
         animator.SetFloat("Speed", velocity.sqrMagnitude);
@@ -112,23 +86,5 @@ public class PlayerMove : NetworkBehaviour
         yVelocity += gravity * Time.deltaTime;
     }
 
-    public void HandleCamera(Vector2 look, float zoom)
-    {
-        if (!isLocalPlayer) return;
-        float mouseX = look.x * mouseSensitivity * Time.deltaTime;
-        float mouseY = look.y * mouseSensitivity * Time.deltaTime;
-
-        xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, -clampAngle, clampAngle);
-        yRotation += mouseX;
-
-        if (_cameraTrackTrnsform != null)
-            _cameraTrackTrnsform.localRotation = Quaternion.Euler(xRotation, yRotation, 0f);
-
-        if (zoom != 0)
-        {
-            cameraSetting.CameraDistance -= zoom * _zoomSpeed * Time.deltaTime;
-            cameraSetting.CameraDistance = Mathf.Clamp(cameraSetting.CameraDistance, 2, 15);
-        }
-    }
+  
 }

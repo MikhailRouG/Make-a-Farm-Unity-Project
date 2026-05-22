@@ -5,11 +5,9 @@ using System;
 
 public class Player : NetworkBehaviour
 {
-    public Inventory Inventory { get; private set; }
-
-
     private PlayerInputActions input;
     private PlayerMove move;
+    private PlayerCameraController cameraController;
     private PlayerInteraction interaction;
     private PlayerInventory playerInventory;
     private PlayerPlacement _placement;
@@ -21,18 +19,19 @@ public class Player : NetworkBehaviour
     private void Awake()
     {
         input = new PlayerInputActions();
-        Inventory = GetComponent<Inventory>();
         move = GetComponent<PlayerMove>();
         interaction = GetComponent<PlayerInteraction>();
         playerInventory = GetComponent<PlayerInventory>();
         _placement = GetComponent<PlayerPlacement>();
+
     }
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
         if (!isLocalPlayer) return;
         input.Player.Enable();
-
+        cameraController = GetComponent<PlayerCameraController>();
+        cameraController.Initialize();
         input.Player.Jump.performed += ctx => jumpPressed = true;
         input.Player.Jump.canceled += ctx => jumpPressed = false;
 
@@ -45,24 +44,6 @@ public class Player : NetworkBehaviour
         input.Player.Escape.performed += OnEscape;
         input.Player.Plant.performed += OnPlant;
     }
-    private void OnEnable()
-    {
-        if(!isLocalPlayer)return;
-        input.Player.Enable();
-
-        input.Player.Jump.performed += ctx => jumpPressed = true;
-        input.Player.Jump.canceled += ctx => jumpPressed = false;
-
-        input.Player.Interact.performed += OnInteract;
-
-        input.Player.Interact.performed += ctx => interactPressed = true;
-        input.Player.CursorVisable.performed += ctx => cursorTogglePressed = true;
-
-        input.Player.UseItem.performed += OnUseItem;
-        input.Player.Escape.performed += OnEscape;
-        input.Player.Plant.performed += OnPlant;
-    }
-
     private void OnDisable()
     {
         if (isLocalPlayer && input != null)
@@ -97,8 +78,11 @@ public class Player : NetworkBehaviour
         bool isRunning = input.Player.Shift.IsPressed();
 
         move.HandleMove(moveDir, isRunning);
-        if (Cursor.visible == false) move.HandleCamera(lookDir, zoom); 
-        else if (zoom != 0) move.HandleCamera(Vector2.zero, zoom);
+        if (cameraController != null)
+        {
+            if (Cursor.visible == false) cameraController.HandleCamera(lookDir, zoom);
+            else if (zoom != 0) cameraController.HandleCamera(Vector2.zero, zoom);
+        }
         move.HandleGravityAndJump(jumpPressed);
     }
 
@@ -124,6 +108,6 @@ public class Player : NetworkBehaviour
 
     private void OnPlant(InputAction.CallbackContext ctx)
     {
-        if (_placement.enabled == true) _placement.CmdConfirmPlacement();
+        if (_placement.enabled == true) _placement.ConfirmPlacement();
     }
 }

@@ -18,7 +18,6 @@ public class Fruit : NetworkBehaviour, IInteractable
         if (!isServer) return;
         _ownerId = ownerId;
         _item = item;
-        Debug.Log("Spawned");
     }
     [Server]
     public void Interact(GameObject interactor)

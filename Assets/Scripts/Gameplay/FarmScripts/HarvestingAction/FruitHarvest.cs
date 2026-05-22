@@ -14,7 +14,19 @@ public class FruitHarvest : NetworkBehaviour, IHarvestable
     private void Awake()
     {
         if (_stem == null) return;
-        _fruitPoint ??= _stem.GetComponentsInChildren<Transform>();
+        int childCount = _stem.childCount;
+        if (childCount > 0)
+        {
+            _fruitPoint = new Transform[childCount];
+            for (int i = 0; i < childCount; i++)
+            {
+                _fruitPoint[i] = _stem.GetChild(i);
+            }
+        }
+        else
+        {
+            _fruitPoint = new Transform[] { _stem };
+        }
     }
     public void StartHarvesting(uint ownerId, ItemSeed seed)
     {
@@ -28,23 +40,23 @@ public class FruitHarvest : NetworkBehaviour, IHarvestable
     {
         for (int i = 0; i < _fruitCount; i++)
         {
-            Debug.Log("Startfdsas");
             float randomAngle = Random.Range(0f, 360f);
             int randomPoint = Random.Range(0, _fruitPoint.Length);
-            GameObject fruitInstance = Instantiate(_fruitPrefab);
-            fruitInstance.transform.SetParent(transform);
-            fruitInstance.transform.position = _fruitPoint[randomPoint].position;
-            fruitInstance.transform.localRotation = Quaternion.Euler(0, randomAngle, 0);
-            NetworkServer.Spawn(fruitInstance);
-            var fruitComponent = fruitInstance.GetComponent<Fruit>();
-            if (fruitComponent == null)
+            Transform targetPoint = _fruitPoint[randomPoint];
+
+            Quaternion targetRotation = Quaternion.Euler(0, randomAngle, 0);
+            GameObject fruitInstance = Instantiate(_fruitPrefab, targetPoint.position, targetRotation);
+            if (!fruitInstance.TryGetComponent<Fruit>(out Fruit fruitComponent))
             {
-                Debug.LogError("[FruitSpawner] Fruit prefab is missing the Fruit component!", this);
+                Debug.LogError("[FruitHarvest] Fruit == null", this);
                 Destroy(fruitInstance);
                 continue;
             }
-            if (_seed.HarvestItem != null && _seed.HarvestItem.Length > 0)
+
+            if (_seed != null && _seed.HarvestItem != null && _seed.HarvestItem.Length > 0)
             {
+
+                NetworkServer.Spawn(fruitInstance);
                 fruitComponent.Init(_ownerId, _seed.HarvestItem[0]);
             }
         }

@@ -30,7 +30,7 @@ public class Plant : NetworkBehaviour
             if (_seedId < 0) return null;
 
             if (_database == null)
-                ProjectContext.Instance.Container.Inject(this);
+                _database = ItemDatabase.Instance;
 
             if (_database != null)
                 _seed = _database.Get(_seedId) as ItemSeed;
@@ -113,9 +113,12 @@ public class Plant : NetworkBehaviour
         if (obj.TryGetComponent<IHarvestable>(out IHarvestable component))
             {
                 component.StartHarvesting(_ownerNetId,_seed);
-            NetworkServer.Destroy(gameObject);
             }
-        
+        else
+        {
+            Debug.LogWarning($"[Plant] Внимание! На префабе {obj.name} НЕ НАЙДЕН компонент/интерфейс IHarvestable! Проверьте префаб плода в инспекторе.");
+        }
+        NetworkServer.Destroy(gameObject);
     }
 
     private void OnSeedSynced(int oldId, int newId)

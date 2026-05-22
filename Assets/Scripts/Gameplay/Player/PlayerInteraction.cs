@@ -46,7 +46,6 @@ public class PlayerInteraction : NetworkBehaviour
     }
     public void Interaction(Ray ray)
     {
-        Debug.Log("sas");
         if(CheckMouseOnUi()) return;
         Debug.DrawRay(ray.origin, ray.direction * interactDistance, Color.green);
         if (Physics.Raycast(ray, out RaycastHit hit, interactDistance))

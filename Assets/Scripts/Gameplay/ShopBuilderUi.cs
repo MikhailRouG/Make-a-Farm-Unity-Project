@@ -16,10 +16,9 @@ public class ShopBuilderUi : MonoBehaviour
         _database = database;
         if (_database == null)
         {
-            Debug.LogError("[ShopBuilderUi] _database равен null!");
+            Debug.LogError("[ShopBuilderUi] _database = null!");
         }
         _cardFactory = cardFactory;
-        Debug.Log($"[ShopBuilderUi] Инициализирован! ID объекта: {GetInstanceID()}. База: {(_database != null)}");
     }
     public void OpenShop(PlayerShopServer buyer)
     {
