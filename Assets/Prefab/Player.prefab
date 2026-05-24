@@ -53,6 +53,7 @@ GameObject:
   - component: {fileID: 2489266193369401995}
   - component: {fileID: 8262415846739455726}
   - component: {fileID: 5527747375020119178}
+  - component: {fileID: -2209034247292482120}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -439,6 +440,24 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
+--- !u!114 &-2209034247292482120
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5661663425880787205}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f6f3bf89aa97405989c802ba270f815, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror.Components::Mirror.NetworkAnimator
+  syncMethod: 0
+  syncDirection: 1
+  syncMode: 0
+  syncInterval: 0
+  clientAuthority: 0
+  animator: {fileID: 8356776971576570359}
 --- !u!1001 &1825533404920856738
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -499,5 +518,10 @@ PrefabInstance:
 --- !u!4 &6852151399623360271 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5062648038478331821, guid: 3a9593f3b8e535042967528abd4b508c, type: 3}
+  m_PrefabInstance: {fileID: 1825533404920856738}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &8356776971576570359 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 7686699621792788821, guid: 3a9593f3b8e535042967528abd4b508c, type: 3}
   m_PrefabInstance: {fileID: 1825533404920856738}
   m_PrefabAsset: {fileID: 0}

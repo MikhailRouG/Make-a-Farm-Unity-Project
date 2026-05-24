@@ -9,7 +9,7 @@ public class Plant : NetworkBehaviour
     private int _seedId = -1;
 
     [SyncVar(hook = nameof(OnStageChanged))]
-    private int _stageIndex;
+    private int _stageIndex = -1;
 
     [SyncVar] private uint _ownerNetId;
 
@@ -30,66 +30,93 @@ public class Plant : NetworkBehaviour
             if (_seedId < 0) return null;
 
             if (_database == null)
-                _database = ItemDatabase.Instance;
+            {
+                var container = ProjectContext.Instance.Container;
+                container.Inject(this);
 
+            }
             if (_database != null)
                 _seed = _database.Get(_seedId) as ItemSeed;
 
             return _seed;
         }
     }
+
+    private void Awake()
+    {
+        var container = ProjectContext.Instance.Container;
+        container.Inject(this);
+    }
     public override void OnStartClient()
     {
         base.OnStartClient();
-            UpdateVisual(_stageIndex);
+        TryUpdateVisual();
     }
-    public void Init(uint ownerId, ItemSeed item)
+    public void Init(uint ownerId, ItemSeed seedConfig)
     {
-        if (!isServer) return;
+        Debug.Log($"[Plant Init] isServer={isServer}, itemId={seedConfig.Id}, netId={netId}", this);
         _ownerNetId = ownerId;
-        _seed = item;
-        _seedId = item.Id;
+        _seed = seedConfig;
+        _seedId = seedConfig.Id;
         _stageIndex = 0;
+
         if (_growCoroutine != null) StopCoroutine(_growCoroutine);
         _growCoroutine = StartCoroutine(GrowRoutine());
 
-        UpdateVisual(_stageIndex);
+        TryUpdateVisual();
     }
     private IEnumerator GrowRoutine()
     {
-        while (_seed != null && _stageIndex < _seed.Stages.Length - 1)
+        yield return new WaitUntil(() => _seedId >= 0);
+        yield return new WaitUntil(() => _database != null || ItemDatabase.Instance != null);
+        yield return new WaitUntil(() => Seed != null);
+
+        while (_stageIndex < Seed.Stages.Length - 1)
         {
-            yield return new WaitForSeconds(_seed.TimePerStage);
-            if (_seed == null)
-            {
-                Debug.LogError($"[Plant] Cannot grow! Either _seed is null on GameObject: {gameObject.name}", this);
-                Debug.LogError(_stageIndex);
-                yield break;
-            }
+            yield return new WaitForSeconds(Seed.TimePerStage);
 
             _stageIndex++;
-            UpdateVisual(_stageIndex);
+            TryUpdateVisual();
+            if (_stageIndex >= Seed.Stages.Length - 1)
+            {
+                OnLastStage();
+                yield break;
+            }
         }
+    }
+    private void TryUpdateVisual()
+    {
+        if (_seedId < 0 || _stageIndex < 0)
+        {
+            Debug.Log($"[Plant] Waiting sync. seedId={_seedId}, stage={_stageIndex}", this);
+            return;
+        }
+
+        UpdateVisual(_stageIndex);
     }
     private void UpdateVisual(int stage)
     {
+        if (_seedId < 0 || _stageIndex < 0) 
+        {
+            Debug.Log(_seedId + _stageIndex);
+            return;
+        }
         ItemSeed seed = Seed;
-        if (_seed == null || _seed.Stages == null || stage >= _seed.Stages.Length) return;
+        if (seed == null || seed.Stages == null || stage < 0 || stage >= seed.Stages.Length)
+        {
+            Debug.LogWarning($"[Plant] Cannot update visual. Seed or stage invalid. Stage: {stage}", this);
+            return;
+        }
+
 
         if (_currentVisual != null)
             Destroy(_currentVisual);
-        if (stage >= _seed.Stages.Length - 1 && isServer)
+        if (stage >= seed.Stages.Length - 1)
         {
-            {
-                if (isServer)
-                {
-                    OnLastStage();
-                }
-                return;
-            }
+            return;
         }
         _currentVisual = Instantiate(
-            _seed.Stages[stage],
+            seed.Stages[stage],
             transform.position,
             Quaternion.identity,
             transform
@@ -97,14 +124,21 @@ public class Plant : NetworkBehaviour
     }
     private void OnStageChanged(int oldStage, int newStage)
     {
-        if (!isServer)
-        {
-            UpdateVisual(newStage);
-        }
+        Debug.Log($"{oldStage}, {newStage}");
+        _stageIndex = newStage;
+        TryUpdateVisual();
+    }
+
+    private void OnSeedSynced(int oldId, int newId)
+    {
+        _seedId = newId;
+        _seed = null;
+        TryUpdateVisual();
     }
     private void OnLastStage()
     {
-       GameObject obj =  Instantiate(
+        if (!isServer) return;
+        GameObject obj =  Instantiate(
            _seed.Stages[_seed.Stages.Length - 1],
            transform.position,
            Quaternion.identity
@@ -116,18 +150,9 @@ public class Plant : NetworkBehaviour
             }
         else
         {
-            Debug.LogWarning($"[Plant] Внимание! На префабе {obj.name} НЕ НАЙДЕН компонент/интерфейс IHarvestable! Проверьте префаб плода в инспекторе.");
+            Debug.LogWarning($"[Plant] пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ! пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ {obj.name} пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ IHarvestable! пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.");
         }
         NetworkServer.Destroy(gameObject);
-    }
-
-    private void OnSeedSynced(int oldId, int newId)
-    {
-        if (!isServer)
-        {
-            _seed = null;
-            UpdateVisual(_stageIndex);
-        }
     }
     private void OnDestroy()
     {

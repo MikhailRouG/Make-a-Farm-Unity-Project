@@ -37,7 +37,7 @@ public class MainMenuController : MonoBehaviour
     {
         loadingScreen.Show();
 
-        NetworkManager.singleton.networkAddress = "localhost";
+        NetworkManager.singleton.networkAddress = ipInputField.text;
         NetworkManager.singleton.StartClient();
     }
 

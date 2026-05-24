@@ -63,8 +63,11 @@ public class PlayerMove : NetworkBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
         }
 
-        animator.SetFloat("Speed", velocity.sqrMagnitude);
         velocity.y = yVelocity;
+        if (animator != null)
+        {
+            animator.SetFloat("Speed", moveInput.sqrMagnitude * currentSpeed);
+        }
         controller.Move(velocity * Time.deltaTime);
     }
 

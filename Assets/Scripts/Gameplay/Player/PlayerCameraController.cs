@@ -28,7 +28,7 @@ public class PlayerCameraController : MonoBehaviour
     }
     private void LateUpdate()
     {
-        if (cameraSetting != null || _cameraPrefab)
+        if (cameraSetting != null)
         {
             _cameraTrackTransform.position = _pointTransform.position;
         }

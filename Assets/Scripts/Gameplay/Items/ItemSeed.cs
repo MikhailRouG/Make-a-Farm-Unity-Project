@@ -17,7 +17,7 @@ public class ItemSeed : ItemConfig
         PlayerPlacement i = owner.GetComponent<PlayerPlacement>();
         if(i.enabled == true) i.enabled = false;
         i.enabled = true;
-        i.StartPlanting(Id);
+        i.TargetStartPlanting(owner.connectionToClient, Id);
         return true;
     }
 }
