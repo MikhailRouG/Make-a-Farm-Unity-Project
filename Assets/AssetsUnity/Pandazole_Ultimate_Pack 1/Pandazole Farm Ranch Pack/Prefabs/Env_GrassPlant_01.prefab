@@ -5,6 +5,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: a868df66cf6d9e747a1fada98ddfa09b, type: 3}
@@ -56,23 +57,27 @@ PrefabInstance:
       value: Env_GrassPlant_01
       objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a868df66cf6d9e747a1fada98ddfa09b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -7601752521303620795}
   m_SourcePrefab: {fileID: 100100000, guid: a868df66cf6d9e747a1fada98ddfa09b, type: 3}
 --- !u!1 &9028934125814072540 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: a868df66cf6d9e747a1fada98ddfa09b, type: 3}
   m_PrefabInstance: {fileID: 8182018053916195213}
   m_PrefabAsset: {fileID: 0}
---- !u!64 &9126505835459981502
-MeshCollider:
+--- !u!114 &-7601752521303620795
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9028934125814072540}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
   m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 3519422352110623035, guid: a868df66cf6d9e747a1fada98ddfa09b, type: 3}
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27e0a6534d0e3e84fb29239474ab4ee2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GpuInctancingEnable

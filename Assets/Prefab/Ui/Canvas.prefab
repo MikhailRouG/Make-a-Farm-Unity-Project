@@ -827,8 +827,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -228.326}
-  m_SizeDelta: {x: 400, y: 75}
+  m_AnchoredPosition: {x: 0, y: -221.3}
+  m_SizeDelta: {x: 380, y: 75}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6368052769580353648
 CanvasRenderer:
@@ -867,7 +867,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 43.18
+  m_PixelsPerUnitMultiplier: 2
 --- !u!114 &6253946171572677829
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -881,7 +881,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
-    m_Left: 25
+    m_Left: 15
     m_Right: 0
     m_Top: 12
     m_Bottom: 0
@@ -979,10 +979,6 @@ PrefabInstance:
     - target: {fileID: 1947668365668354473, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3800056444673166563, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
-      propertyPath: m_Enabled
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8724909676558106781, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
       propertyPath: m_Name
@@ -1086,17 +1082,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6470295098727925834, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
-      propertyPath: m_Colors.m_NormalColor.b
+    - target: {fileID: 3157268172747617659, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
+      propertyPath: m_Color.b
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 6470295098727925834, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
-      propertyPath: m_Colors.m_NormalColor.g
+    - target: {fileID: 3157268172747617659, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
+      propertyPath: m_Color.g
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 6470295098727925834, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
-      propertyPath: m_Colors.m_NormalColor.r
+    - target: {fileID: 3157268172747617659, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
+      propertyPath: m_Color.r
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3157268172747617659, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
+      propertyPath: m_PixelsPerUnitMultiplier
+      value: 7.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 6470295098727925834, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
+      propertyPath: m_Colors.m_DisabledColor.a
+      value: 0.5882353
       objectReference: {fileID: 0}
     - target: {fileID: 8724909676558106781, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
       propertyPath: m_Name
@@ -1200,10 +1204,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3800056444673166563, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 8724909676558106781, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
       propertyPath: m_Name
       value: Slot (4)
@@ -1306,29 +1306,13 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3800056444673166563, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
-      propertyPath: m_Color.b
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3800056444673166563, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
-      propertyPath: m_Color.g
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3800056444673166563, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
-      propertyPath: m_Color.r
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3800056444673166563, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
-      propertyPath: m_Enabled
-      value: 1
+    - target: {fileID: 6470295098727925834, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
+      propertyPath: m_Colors.m_DisabledColor.a
+      value: 0.5882353
       objectReference: {fileID: 0}
     - target: {fileID: 8724909676558106781, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
       propertyPath: m_Name
       value: Slot (1)
-      objectReference: {fileID: 0}
-    - target: {fileID: 8976537178511124793, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
-      propertyPath: m_text
-      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 8976537178511124793, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
       propertyPath: m_fontColor32.rgba
@@ -1432,10 +1416,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3800056444673166563, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 8724909676558106781, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
       propertyPath: m_Name
       value: Slot (3)
@@ -1537,10 +1517,6 @@ PrefabInstance:
     - target: {fileID: 1947668365668354473, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3800056444673166563, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
-      propertyPath: m_Enabled
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8724909676558106781, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
       propertyPath: m_Name
