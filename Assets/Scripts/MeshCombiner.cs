@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter))]
@@ -7,22 +8,23 @@ public class MeshCombiner : MonoBehaviour
     private void Awake()
     {
         MeshFilter[] meshFilters = GetComponentsInChildren<MeshFilter>();
-        CombineInstance[] combine = new CombineInstance[meshFilters.Length];
+        CombineInstance[] combine = new CombineInstance[meshFilters.Length - 1];
 
         Matrix4x4 myTransform = transform.worldToLocalMatrix;
-
-        int i = 0;
-        while (i < meshFilters.Length)
+        int index = 0;
+        foreach (MeshFilter mf in meshFilters)
         {
-            if (meshFilters[i].gameObject == gameObject) { i++; continue; }
+            if (mf.gameObject == gameObject)
+                continue;
 
-            combine[i].mesh = meshFilters[i].sharedMesh;
+            if (mf.sharedMesh == null)
+                continue;
 
-            combine[i].transform = myTransform * meshFilters[i].transform.localToWorldMatrix;
+            combine[index].mesh = mf.sharedMesh;
+            combine[index].transform = myTransform * mf.transform.localToWorldMatrix;
+            index++;
 
-            meshFilters[i].gameObject.SetActive(false);
-
-            i++;
+            mf.gameObject.SetActive(false);
         }
 
         MeshFilter meshFilter = GetComponent<MeshFilter>();

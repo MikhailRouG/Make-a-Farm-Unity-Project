@@ -20,10 +20,23 @@ SpriteAtlas:
       readable: 0
       crunchedCompression: 0
       sRGB: 1
-    platformSettings: []
+    platformSettings:
+    - serializedVersion: 4
+      m_BuildTarget: DefaultTexturePlatform
+      m_MaxTextureSize: 4096
+      m_ResizeAlgorithm: 0
+      m_TextureFormat: -1
+      m_TextureCompression: 1
+      m_CompressionQuality: 50
+      m_CrunchedCompression: 0
+      m_AllowsAlphaSplitting: 0
+      m_Overridden: 0
+      m_IgnorePlatformSupport: 0
+      m_AndroidETC2FallbackOverride: 0
+      m_ForceMaximumCompressionQuality_BC6H_BC7: 0
     packingSettings:
       serializedVersion: 2
-      padding: 4
+      padding: 8
       blockOffset: 1
       allowAlphaSplitting: 0
       enableRotation: 0
@@ -33,39 +46,43 @@ SpriteAtlas:
     variantMultiplier: 1
     packables:
     - {fileID: 2800000, guid: 489b85679be29d046902881b5bc48813, type: 3}
-    - {fileID: 2800000, guid: 5e628f1a2c45bcb4784f6e9e13088350, type: 3}
-    - {fileID: 2800000, guid: 8c04967ef9122d542bb483d3786ce092, type: 3}
-    - {fileID: 2800000, guid: 0cdf880cd0a82914da7fd8de0c052557, type: 3}
-    - {fileID: 2800000, guid: b0e336f415b6ada498ec0880d2556083, type: 3}
-    - {fileID: 2800000, guid: 218253ff9c7ae66478a32e2a28cf15f6, type: 3}
+    - {fileID: 2800000, guid: 93c95c6e84f79dd44a4b5833c291d370, type: 3}
+    - {fileID: 2800000, guid: 74673dad579a09449997fcf0094c4f84, type: 3}
     - {fileID: 2800000, guid: cc1ec9a9551422b42b1ad60be4e08a44, type: 3}
+    - {fileID: 2800000, guid: 218253ff9c7ae66478a32e2a28cf15f6, type: 3}
+    - {fileID: 2800000, guid: b0e336f415b6ada498ec0880d2556083, type: 3}
+    - {fileID: 2800000, guid: 6143b6d8e9b52fc4380de2b93c83faa3, type: 3}
+    - {fileID: 2800000, guid: 4614b491207a2a5458d9c34b6c137e48, type: 3}
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
     packedSpriteRenderDataKeys:
     - b0e336f415b6ada498ec0880d2556083: 21300000
     - 489b85679be29d046902881b5bc48813: 21300000
+    - 6143b6d8e9b52fc4380de2b93c83faa3: 21300000
     - cc1ec9a9551422b42b1ad60be4e08a44: -2413806693520163455
-    - 5e628f1a2c45bcb4784f6e9e13088350: 21300000
     - 0cdf880cd0a82914da7fd8de0c052557: 21300000
-    - 8c04967ef9122d542bb483d3786ce092: 21300000
+    - 74673dad579a09449997fcf0094c4f84: 21300000
+    - 93c95c6e84f79dd44a4b5833c291d370: 21300000
     - 218253ff9c7ae66478a32e2a28cf15f6: 21300000
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
   - {fileID: 21300000, guid: b0e336f415b6ada498ec0880d2556083, type: 3}
   - {fileID: 21300000, guid: 489b85679be29d046902881b5bc48813, type: 3}
+  - {fileID: 21300000, guid: 6143b6d8e9b52fc4380de2b93c83faa3, type: 3}
   - {fileID: -2413806693520163455, guid: cc1ec9a9551422b42b1ad60be4e08a44, type: 3}
-  - {fileID: 21300000, guid: 5e628f1a2c45bcb4784f6e9e13088350, type: 3}
   - {fileID: 21300000, guid: 0cdf880cd0a82914da7fd8de0c052557, type: 3}
-  - {fileID: 21300000, guid: 8c04967ef9122d542bb483d3786ce092, type: 3}
+  - {fileID: 21300000, guid: 74673dad579a09449997fcf0094c4f84, type: 3}
+  - {fileID: 21300000, guid: 93c95c6e84f79dd44a4b5833c291d370, type: 3}
   - {fileID: 21300000, guid: 218253ff9c7ae66478a32e2a28cf15f6, type: 3}
   m_PackedSpriteNamesToIndex:
   - RawTomato
   - CarrotImage
+  - Layer3(1)
   - Circle
-  - ChatGPT Image Jan 24, 2026, 08_01_40 PM
   - Layer 2
-  - ChatGPT Image Nov 29, 2025, 11_46_46 PM
+  - Seed_Carrot
+  - Tomato_Seed
   - TomatoImage
   m_RenderDataMap: {}
   m_Tag: Atlas

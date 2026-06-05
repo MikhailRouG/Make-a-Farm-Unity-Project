@@ -1,4 +1,5 @@
 using Mirror;
+using System;
 using System.Collections;
 using UnityEngine;
 using Zenject;
@@ -17,6 +18,8 @@ public class Plant : NetworkBehaviour
     private ItemSeed _seed;
     private GameObject _currentVisual;
     private Coroutine _growCoroutine;
+
+    public event Action<float> OnUpdateStage;
     [Inject]
     private void Construct(ItemDatabase database)
     {
@@ -121,6 +124,7 @@ public class Plant : NetworkBehaviour
             Quaternion.identity,
             transform
         );
+        OnUpdateStage?.Invoke(Seed.TimePerStage);
     }
     private void OnStageChanged(int oldStage, int newStage)
     {
@@ -150,7 +154,7 @@ public class Plant : NetworkBehaviour
             }
         else
         {
-            Debug.LogWarning($"[Plant] ��������! �� ������� {obj.name} �� ������ ���������/��������� IHarvestable! ��������� ������ ����� � ����������.");
+            Debug.LogWarning($"[Plant] {obj.name} IHarvestable! .");
         }
         NetworkServer.Destroy(gameObject);
     }

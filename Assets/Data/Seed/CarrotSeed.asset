@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemSeed
   <Id>k__BackingField: 100
   <Name>k__BackingField: Carrot seed
-  <Icon>k__BackingField: {fileID: 21300000, guid: 5e628f1a2c45bcb4784f6e9e13088350, type: 3}
+  <Icon>k__BackingField: {fileID: 21300000, guid: 74673dad579a09449997fcf0094c4f84, type: 3}
   <Model>k__BackingField: {fileID: 0}
   <IsStackable>k__BackingField: 1
   <MaxStackSize>k__BackingField: 32
@@ -30,4 +30,3 @@ MonoBehaviour:
   <HarvestItem>k__BackingField:
   - {fileID: 11400000, guid: d9b23277d4e662a49ad06a92a8c7f5e1, type: 2}
   <TimePerStage>k__BackingField: 3
-  <harvestAction>k__BackingField: {fileID: 11400000, guid: 621793f4025d2eb40b747685f16d1089, type: 2}
