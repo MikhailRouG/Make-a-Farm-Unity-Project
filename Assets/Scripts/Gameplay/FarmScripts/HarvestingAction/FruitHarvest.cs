@@ -1,4 +1,3 @@
-using Telepathy;
 using UnityEngine;
 using Mirror;
 public class FruitHarvest : NetworkBehaviour, IHarvestable
@@ -7,7 +6,7 @@ public class FruitHarvest : NetworkBehaviour, IHarvestable
     [SerializeField] private Transform[] _fruitPoint;
     [SerializeField] private GameObject _fruitPrefab;
     [SerializeField] private int _fruitCount = 3;
-
+    private int _currentCount;
     private uint _ownerId;
     private ItemSeed _seed;
 
@@ -35,9 +34,11 @@ public class FruitHarvest : NetworkBehaviour, IHarvestable
         _seed = seed;
         SpawnFruits();
     }
+
     [Server]
     private void SpawnFruits()
     {
+        _currentCount  = _fruitCount;
         for (int i = 0; i < _fruitCount; i++)
         {
             float randomAngle = Random.Range(0f, 360f);
@@ -58,7 +59,19 @@ public class FruitHarvest : NetworkBehaviour, IHarvestable
 
                 NetworkServer.Spawn(fruitInstance);
                 fruitComponent.Init(_ownerId, _seed.HarvestItem[0]);
+                fruitComponent.OnDestroyedServer += HandleFruitDestroyed;
             }
+        }
+    }
+
+    [Server]
+    private void HandleFruitDestroyed()
+    {
+        _currentCount--;
+
+        if (_currentCount <= 0)
+        {
+            NetworkServer.Destroy(gameObject);
         }
     }
 }
