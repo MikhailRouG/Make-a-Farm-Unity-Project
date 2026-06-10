@@ -19,7 +19,8 @@ public class Plant : NetworkBehaviour
     private GameObject _currentVisual;
     private Coroutine _growCoroutine;
 
-    public event Action<float> OnUpdateStage;
+    public event Action<EffectConfig> OnInitialized;
+    public event Action<EffectState,float> OnUpdateStage;
     [Inject]
     private void Construct(ItemDatabase database)
     {
@@ -54,7 +55,13 @@ public class Plant : NetworkBehaviour
     {
         base.OnStartClient();
         TryUpdateVisual();
+        ItemSeed seed = Seed;
+
+        if (seed == null)
+            return;
+        OnInitialized?.Invoke(seed.Effect);
     }
+    [Server]
     public void Init(uint ownerId, ItemSeed seedConfig)
     {
         Debug.Log($"[Plant Init] isServer={isServer}, itemId={seedConfig.Id}, netId={netId}", this);
@@ -68,6 +75,7 @@ public class Plant : NetworkBehaviour
 
         TryUpdateVisual();
     }
+    [Server]
     private IEnumerator GrowRoutine()
     {
         yield return new WaitUntil(() => _seedId >= 0);
@@ -87,16 +95,18 @@ public class Plant : NetworkBehaviour
             }
         }
     }
+
     private void TryUpdateVisual()
     {
+        if (!isClient) return;
         if (_seedId < 0 || _stageIndex < 0)
         {
             Debug.Log($"[Plant] Waiting sync. seedId={_seedId}, stage={_stageIndex}", this);
             return;
         }
-
-        UpdateVisual(_stageIndex);
+            UpdateVisual(_stageIndex);
     }
+    [Client]
     private void UpdateVisual(int stage)
     {
         if (_seedId < 0 || _stageIndex < 0) 
@@ -124,13 +134,19 @@ public class Plant : NetworkBehaviour
             Quaternion.identity,
             transform
         );
-        OnUpdateStage?.Invoke(Seed.TimePerStage);
+        if (_stageIndex == 0)
+        {
+            OnInitialized?.Invoke(_seed.Effect);
+            OnUpdateStage?.Invoke(EffectState.Start, _seed.TimePerStage);
+        }
+        else OnUpdateStage?.Invoke(EffectState.Upgrade, _seed.TimePerStage);
     }
     private void OnStageChanged(int oldStage, int newStage)
     {
         Debug.Log($"{oldStage}, {newStage}");
         _stageIndex = newStage;
         TryUpdateVisual();
+
     }
 
     private void OnSeedSynced(int oldId, int newId)

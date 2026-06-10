@@ -22,9 +22,10 @@ MonoBehaviour:
   <GhostObject>k__BackingField: {fileID: 5517866692966445679, guid: da049d9d83f75154e93c887f48d0e10e, type: 3}
   <PlantStartObject>k__BackingField: {fileID: 2921874841248964185, guid: 8e38d98a4c572cd4d94e4112e9c29cdd, type: 3}
   <Stages>k__BackingField:
-  - {fileID: 3342850217842563645, guid: bba82736170bca648b37a345d0366bb0, type: 3}
+  - {fileID: 5247171341285440238, guid: a16cf1567ae6422478918be287cc0ea9, type: 3}
   - {fileID: 8194921344609212003, guid: a8c9cbbe0b07f124bb0c85d052634263, type: 3}
   - {fileID: 1422494071649026194, guid: a2c12e3f1865c1c439c675f20c674802, type: 3}
   <HarvestItem>k__BackingField:
   - {fileID: 11400000, guid: e3bf31708508fe24ba68a02caf57006b, type: 2}
   <TimePerStage>k__BackingField: 5
+  <Effect>k__BackingField: {fileID: 11400000, guid: 6f9cd2bb136121a478614803a1cc0c94, type: 2}

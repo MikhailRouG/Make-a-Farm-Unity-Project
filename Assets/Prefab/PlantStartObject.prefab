@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2921874841248964185}
   - component: {fileID: 4986889452620291317}
   - component: {fileID: 6112876846334100022}
+  - component: {fileID: 3341162878602928182}
   m_Layer: 0
   m_Name: PlantStartObject
   m_TagString: Untagged
@@ -105,6 +106,18 @@ MonoBehaviour:
   _plant: {fileID: 2921874841248964185}
   _textObject: {fileID: 5126676777005102407}
   _showDistance: 5
+--- !u!114 &3341162878602928182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6543500234838181880}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9b0db8ae820956448ed15a87e6d4e0a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
 --- !u!1 &8686180278006296479
 GameObject:
   m_ObjectHideFlags: 0
@@ -139,7 +152,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 2}
+  m_AnchoredPosition: {x: 0.084, y: 1.7590001}
   m_SizeDelta: {x: 2.1689, y: 0.5558}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &2317547500146015201

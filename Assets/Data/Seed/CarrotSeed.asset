@@ -30,3 +30,4 @@ MonoBehaviour:
   <HarvestItem>k__BackingField:
   - {fileID: 11400000, guid: d9b23277d4e662a49ad06a92a8c7f5e1, type: 2}
   <TimePerStage>k__BackingField: 3
+  <Effect>k__BackingField: {fileID: 11400000, guid: 6f9cd2bb136121a478614803a1cc0c94, type: 2}

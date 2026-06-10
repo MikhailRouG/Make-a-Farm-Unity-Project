@@ -36,6 +36,7 @@ public class PlantText : MonoBehaviour
         if (shouldShow)
         {
             _textObject.transform.rotation = _cameraTransform.rotation;
+            if (_currentTime < 0) _currentTime = 0;
             _textObject.text = $"Time {_currentTime.ToString("F1")}";
             if (!isTextVisible)
             {
@@ -52,7 +53,7 @@ public class PlantText : MonoBehaviour
         }
     }
 
-    private void UpdateTime(float time)
+    private void UpdateTime(EffectState state,float time)
     {
         _currentTime = time;
     }

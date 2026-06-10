@@ -9,6 +9,7 @@ public class ItemSeed : ItemConfig
     [field: SerializeField] public GameObject[] Stages { get; private set; }
     [field: SerializeField] public ItemConfig[] HarvestItem { get; private set; }
     [field: SerializeField] public float TimePerStage { get; private set; } = 5f;
+    [field: SerializeField] public EffectConfig Effect { get; private set; }
 
     public override bool UseServer(
         NetworkIdentity owner,
