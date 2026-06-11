@@ -19,3 +19,6 @@ MonoBehaviour:
   - <State>k__BackingField: 1
     <Prefab>k__BackingField: {fileID: 7155335147208632822, guid: 97c43495f80a3244fad1301dfafbe252, type: 3}
     <Lifetime>k__BackingField: 2
+  - <State>k__BackingField: 2
+    <Prefab>k__BackingField: {fileID: 4994997792314849709, guid: 3dd50886582244645be87adb42aa8528, type: 3}
+    <Lifetime>k__BackingField: 2

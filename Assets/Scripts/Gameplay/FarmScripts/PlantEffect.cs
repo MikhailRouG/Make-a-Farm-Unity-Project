@@ -29,7 +29,7 @@ public class PlantEffect : MonoBehaviour
     {
         _config = effect;
     }
-    private void PlayLocal(EffectState state,float time)
+    private void PlayLocal(EffectState state,string text)
     {
         if (_config == null) return;
 

@@ -1,5 +1,6 @@
 using Mirror;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 public class PlantText : MonoBehaviour
 {
@@ -30,32 +31,63 @@ public class PlantText : MonoBehaviour
     private void Update()
     {
         if (_target == null) return;
-        _currentTime -= Time.deltaTime;
+        if (_cameraTransform == null)
+        {
+            if (Camera.main == null) return;
+
+            _cameraTransform = Camera.main.transform;
+        }
         float sqrDistance = (_target.position - transform.position).sqrMagnitude;
         bool shouldShow = sqrDistance <= (_showDistance * _showDistance);
-        if (shouldShow)
+        if (!shouldShow)
         {
-            _textObject.transform.rotation = _cameraTransform.rotation;
-            if (_currentTime < 0) _currentTime = 0;
-            _textObject.text = $"Time {_currentTime.ToString("F1")}";
-            if (!isTextVisible)
+            HideText();
+            return;
+        }
+        _textObject.transform.rotation = _cameraTransform.rotation;
+
+        if (_currentTime > 0f)
+        {
+            _currentTime -= Time.deltaTime;
+
+            if (_currentTime < 0f)
             {
-                isTextVisible = true;
+                _currentTime = 0f;
+            }
+
+            SetText($"Time {_currentTime:F1}");
+        }
+    }
+
+    private void UpdateTime(EffectState state,string text)
+    {
+
+        if (string.IsNullOrEmpty(text)) return;
+
+        if (state == EffectState.Upgrade)
+        {
+            if (float.TryParse(text, out float value))
+            {
+                _currentTime = value;
             }
         }
         else
         {
-            if (isTextVisible)
-            {
-                _textObject.text = string.Empty;
-                isTextVisible = false;
-            }
+            SetText(text);
         }
     }
 
-    private void UpdateTime(EffectState state,float time)
-    {
-        _currentTime = time;
-    }
 
+    private void SetText(string text)
+    {
+        _textObject.text = text;
+        isTextVisible = true;    }
+
+    private void HideText()
+    {
+        if (!isTextVisible) return;
+
+        _textObject.text = string.Empty;
+        isTextVisible = false;
+    }
 }

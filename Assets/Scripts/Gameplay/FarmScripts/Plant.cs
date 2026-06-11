@@ -20,7 +20,7 @@ public class Plant : NetworkBehaviour
     private Coroutine _growCoroutine;
 
     public event Action<EffectConfig> OnInitialized;
-    public event Action<EffectState,float> OnUpdateStage;
+    public event Action<EffectState,string> OnUpdateStage;
     [Inject]
     private void Construct(ItemDatabase database)
     {
@@ -137,9 +137,9 @@ public class Plant : NetworkBehaviour
         if (_stageIndex == 0)
         {
             OnInitialized?.Invoke(_seed.Effect);
-            OnUpdateStage?.Invoke(EffectState.Start, _seed.TimePerStage);
+            OnUpdateStage?.Invoke(EffectState.Start, _seed.TimePerStage.ToString());
         }
-        else OnUpdateStage?.Invoke(EffectState.Upgrade, _seed.TimePerStage);
+        else OnUpdateStage?.Invoke(EffectState.Upgrade, _seed.TimePerStage.ToString());
     }
     private void OnStageChanged(int oldStage, int newStage)
     {
@@ -167,16 +167,24 @@ public class Plant : NetworkBehaviour
         if (obj.TryGetComponent<IHarvestable>(out IHarvestable component))
             {
                 component.StartHarvesting(_ownerNetId,_seed);
-            }
+            component.OnDestroyedServer += OnDestroyedPlant;
+            OnUpdateStage?.Invoke(EffectState.Harvest, "Can be collected");
+        }
         else
         {
             Debug.LogWarning($"[Plant] {obj.name} IHarvestable! .");
         }
-        NetworkServer.Destroy(gameObject);
     }
     private void OnDestroy()
     {
+
         if (_growCoroutine != null) StopCoroutine(_growCoroutine);
+    }
+    private void OnDestroyedPlant()
+    {
+        OnUpdateStage?.Invoke(EffectState.Destroy, string.Empty);
+        if (!isServer) return;
+        NetworkServer.Destroy(gameObject);
     }
 }
 

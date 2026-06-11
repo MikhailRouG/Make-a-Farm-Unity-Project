@@ -1,4 +1,5 @@
 using Mirror;
+using System;
 using UnityEngine;
 
 public class StandartHarvest : NetworkBehaviour, IHarvestable,IInteractable
@@ -6,6 +7,9 @@ public class StandartHarvest : NetworkBehaviour, IHarvestable,IInteractable
     private uint _ownerId;
     private ItemSeed _seed;
     private bool isInit;
+
+    public event Action OnDestroyedServer;
+
     public string InteractionPrompt => "Collect the plant";
 
     public void StartHarvesting(uint ownerId, ItemSeed seed)
@@ -24,6 +28,7 @@ public class StandartHarvest : NetworkBehaviour, IHarvestable,IInteractable
             if (inventory.TryAddItem(_seed.HarvestItem[0].Id, 1))
             {
                 NetworkServer.Destroy(gameObject);
+                OnDestroyedServer?.Invoke();
             }
         }
     }

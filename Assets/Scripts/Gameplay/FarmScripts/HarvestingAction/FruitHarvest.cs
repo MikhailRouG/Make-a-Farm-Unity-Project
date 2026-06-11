@@ -10,6 +10,8 @@ public class FruitHarvest : NetworkBehaviour, IHarvestable
     private uint _ownerId;
     private ItemSeed _seed;
 
+    public event System.Action OnDestroyedServer;
+
     private void Awake()
     {
         if (_stem == null) return;
@@ -72,6 +74,7 @@ public class FruitHarvest : NetworkBehaviour, IHarvestable
         if (_currentCount <= 0)
         {
             NetworkServer.Destroy(gameObject);
+            OnDestroyedServer?.Invoke();
         }
     }
 }
