@@ -1,7 +1,7 @@
 # 🌾 Make-a-Farm — Multiplayer Farming Game
 
 A real-time multiplayer farming game prototype built with **Unity 6** and **Mirror Networking**.  
-Players can farm,  together in a shared world, all synchronized through a server-authoritative architecture.
+Players can farm together in a shared world, all synchronized through a server-authoritative architecture.
 
 [![Unity](https://img.shields.io/badge/Unity-6%20(URP)-black?logo=unity)](https://unity.com/)
 [![C#](https://img.shields.io/badge/C%23-purple?logo=csharp)](https://learn.microsoft.com/en-us/dotnet/csharp/)
