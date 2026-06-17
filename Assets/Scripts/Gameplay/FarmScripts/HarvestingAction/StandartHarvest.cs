@@ -2,33 +2,36 @@ using Mirror;
 using System;
 using UnityEngine;
 
-public class StandartHarvest : NetworkBehaviour, IHarvestable,IInteractable
+namespace Gameplay.Farm
 {
-    private uint _ownerId;
-    private ItemSeed _seed;
-    private bool isInit;
-
-    public event Action OnDestroyedServer;
-
-    public string InteractionPrompt => "Collect the plant";
-
-    public void StartHarvesting(uint ownerId, ItemSeed seed)
+    public class StandartHarvest : NetworkBehaviour, IHarvestable, IInteractable
     {
-        if (!isServer) return;
-        _ownerId = ownerId;
-        _seed = seed;
-        isInit= true;
-    }
+        private uint _ownerId;
+        private ItemSeed _seed;
+        private bool isInit;
 
-    public void Interact(GameObject interactor)
-    {
-        if(!isInit) return;
-        if (interactor.TryGetComponent<Inventory>(out Inventory inventory))
+        public event Action OnDestroyedServer;
+
+        public string InteractionPrompt => "Collect the plant";
+
+        public void StartHarvesting(uint ownerId, ItemSeed seed)
         {
-            if (inventory.TryAddItem(_seed.HarvestItem[0].Id, 1))
+            if (!isServer) return;
+            _ownerId = ownerId;
+            _seed = seed;
+            isInit = true;
+        }
+
+        public void Interact(GameObject interactor)
+        {
+            if (!isInit) return;
+            if (interactor.TryGetComponent<Inventory>(out Inventory inventory))
             {
-                NetworkServer.Destroy(gameObject);
-                OnDestroyedServer?.Invoke();
+                if (inventory.TryAddItem(_seed.HarvestItem[0].Id, 1))
+                {
+                    NetworkServer.Destroy(gameObject);
+                    OnDestroyedServer?.Invoke();
+                }
             }
         }
     }

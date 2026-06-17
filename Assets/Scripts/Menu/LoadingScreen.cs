@@ -1,8 +1,6 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-
-namespace Assets.AsyncVideo.Coroutines.Example4
+namespace Menu
 {
     public class LoadingScreen : MonoBehaviour
     {
@@ -23,5 +21,6 @@ namespace Assets.AsyncVideo.Coroutines.Example4
         {
             _loadingCircle.transform.Rotate(Vector3.forward * Time.deltaTime * -100, Space.World);
         }
+
     }
 }

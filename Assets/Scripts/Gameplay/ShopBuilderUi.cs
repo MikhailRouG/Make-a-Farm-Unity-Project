@@ -1,68 +1,71 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
-public class ShopBuilderUi : MonoBehaviour
-{
-    private PlayerShopServer _playerShopServer;
-    private ItemDatabase _database;
-    private ShopCardUi.Factory _cardFactory;
-    private List<ShopCardUi> _cards = new() ;
-    [SerializeField] private Transform _cardParent;
+namespace Gameplay.Player.UI.Shop
+{ 
+    public class ShopBuilderUi : MonoBehaviour
+    {
+        private PlayerShopServer _playerShopServer;
+        private ItemDatabase _database;
+        private ShopCardUi.Factory _cardFactory;
+        private List<ShopCardUi> _cards = new();
+        [SerializeField] private Transform _cardParent;
 
 
-    [Inject]
-    public void Construct( ItemDatabase database, ShopCardUi.Factory cardFactory)
-    {
-        _database = database;
-        if (_database == null)
+        [Inject]
+        public void Construct(ItemDatabase database, ShopCardUi.Factory cardFactory)
         {
-            Debug.LogError("[ShopBuilderUi] _database = null!");
+            _database = database;
+            if (_database == null)
+            {
+                Debug.LogError("[ShopBuilderUi] _database = null!");
+            }
+            _cardFactory = cardFactory;
         }
-        _cardFactory = cardFactory;
-    }
-    public void OpenShop(PlayerShopServer buyer)
-    {
-        _playerShopServer = buyer;
-        gameObject.SetActive(true);
-        BuildShop(); 
-    }
-    public void CloseShop()
-    {
-        ClearShop();
-        _playerShopServer = null;
-        gameObject.SetActive(false);
-    }
-    private void BuildShop()
-    {
-        ClearShop();
-        if (_database == null)
+        public void OpenShop(PlayerShopServer buyer)
         {
-            Debug.LogError("[ShopBuilderUi] _database равен null!");
-            return;
+            _playerShopServer = buyer;
+            gameObject.SetActive(true);
+            BuildShop();
         }
-        var items = _database.GetAllItem();
-        foreach (var item in items)
+        public void CloseShop()
         {
-            ShopCardUi card = _cardFactory.Create();
-            card.transform.SetParent(_cardParent, false);
-            card.Build(item);
-            card.OnClick += OnSelectedItem;
-            _cards.Add(card);
+            ClearShop();
+            _playerShopServer = null;
+            gameObject.SetActive(false);
         }
-    }
-    private void ClearShop()
-    {
-        foreach (var card in _cards)
+        private void BuildShop()
         {
-            if (card == null)continue;
-           card.OnClick -= OnSelectedItem;
-            Destroy(card.gameObject);
+            ClearShop();
+            if (_database == null)
+            {
+                Debug.LogError("[ShopBuilderUi] _database равен null!");
+                return;
+            }
+            var items = _database.GetAllItem();
+            foreach (var item in items)
+            {
+                ShopCardUi card = _cardFactory.Create();
+                card.transform.SetParent(_cardParent, false);
+                card.Build(item);
+                card.OnClick += OnSelectedItem;
+                _cards.Add(card);
+            }
         }
-        _cards.Clear();
-    }
-    public void OnSelectedItem(int id)
-    {
-        if (_playerShopServer == null) return;
-        _playerShopServer.CmdBuyItem(id);
+        private void ClearShop()
+        {
+            foreach (var card in _cards)
+            {
+                if (card == null) continue;
+                card.OnClick -= OnSelectedItem;
+                Destroy(card.gameObject);
+            }
+            _cards.Clear();
+        }
+        public void OnSelectedItem(int id)
+        {
+            if (_playerShopServer == null) return;
+            _playerShopServer.CmdBuyItem(id);
+        }
     }
 }

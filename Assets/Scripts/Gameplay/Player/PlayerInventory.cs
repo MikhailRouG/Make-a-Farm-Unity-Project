@@ -3,87 +3,90 @@ using System;
 using UnityEngine;
 using Zenject;
 
-[RequireComponent(typeof(Inventory))]
-public class PlayerInventory : NetworkBehaviour
+namespace Gameplay.Player
 {
-    private Inventory _inventory;
-    private Player _player;
-     private ItemDatabase _itemDatabase;
-
-    [SyncVar(hook = nameof(OnSelectedSlotChanged))]
-    private int _selectedSlotIndex;
-    public int SelectedSlotIndex => _selectedSlotIndex;
-    public event Action<int> OnSelectedSlotChangedEvent;
-
-    [Inject]
-    private void Construct(ItemDatabase itemDatabase)
+    [RequireComponent(typeof(Inventory))]
+    public class PlayerInventory : NetworkBehaviour
     {
-        _itemDatabase = itemDatabase;
-    }
-    private void CheckInjection()
-    {
-        if (_itemDatabase == null)
+        private Inventory _inventory;
+        private Player _player;
+        private ItemDatabase _itemDatabase;
+
+        [SyncVar(hook = nameof(OnSelectedSlotChanged))]
+        private int _selectedSlotIndex;
+        public int SelectedSlotIndex => _selectedSlotIndex;
+        public event Action<int> OnSelectedSlotChangedEvent;
+
+        [Inject]
+        private void Construct(ItemDatabase itemDatabase)
         {
-            var container = ProjectContext.Instance.Container;
-            container.Inject(this);
+            _itemDatabase = itemDatabase;
         }
-    }
-    private void Awake()
-    {
-        CheckInjection();
-        _inventory = GetComponent<Inventory>();
-        _player = GetComponent<Player>();
-        _player.onUseItem += CmdUseSelectedItem;
-    }
-    private void OnSelectedSlotChanged(int oldIndex, int newIndex)
-    {
-        OnSelectedSlotChangedEvent?.Invoke(newIndex);
-    }
-    [Command]
-    public void CmdSelectSlot(int slotIndex)
-    {
-        _selectedSlotIndex = slotIndex;
-    }
-    [Command]
-    public void CmdUseSelectedItem()
-    {
-        InventorySlot slot = _inventory.GetSlotServer(_selectedSlotIndex);
-        if (slot.IsEmpty)
-            return;
-        ItemConfig item = _itemDatabase.Get(slot.ItemId);
-
-        if (item == null)
-            return;
-
-        NetworkIdentity owner = netIdentity;
-
-        bool usedSuccessfully = item.UseServer(owner, slot);
-
-        if (!usedSuccessfully)
-            return;
-
-        if (item.ConsumeOnUse)
+        private void CheckInjection()
         {
-           _inventory.RemoveItemFromSlot(_selectedSlotIndex, 1);
+            if (_itemDatabase == null)
+            {
+                var container = ProjectContext.Instance.Container;
+                container.Inject(this);
+            }
         }
-    }
-    [Command]
-    public void CmdDropSelectedItem()
-    {
-        InventorySlot slot = _inventory.GetSlotServer(_selectedSlotIndex);
+        private void Awake()
+        {
+            CheckInjection();
+            _inventory = GetComponent<Inventory>();
+            _player = GetComponent<Player>();
+            _player.onUseItem += CmdUseSelectedItem;
+        }
+        private void OnSelectedSlotChanged(int oldIndex, int newIndex)
+        {
+            OnSelectedSlotChangedEvent?.Invoke(newIndex);
+        }
+        [Command]
+        public void CmdSelectSlot(int slotIndex)
+        {
+            _selectedSlotIndex = slotIndex;
+        }
+        [Command]
+        public void CmdUseSelectedItem()
+        {
+            InventorySlot slot = _inventory.GetSlotServer(_selectedSlotIndex);
+            if (slot.IsEmpty)
+                return;
+            ItemConfig item = _itemDatabase.Get(slot.ItemId);
 
-        if (slot.IsEmpty)
-            return;
+            if (item == null)
+                return;
 
-        ItemConfig item = _itemDatabase.Get(slot.ItemId);
+            NetworkIdentity owner = netIdentity;
 
-        if (item == null)
-            return;
+            bool usedSuccessfully = item.UseServer(owner, slot);
 
-        _inventory.RemoveItemFromSlot(_selectedSlotIndex, 1);
-    }
-    public void OnEscape()
-    {
-        _selectedSlotIndex = -1;
+            if (!usedSuccessfully)
+                return;
+
+            if (item.ConsumeOnUse)
+            {
+                _inventory.RemoveItemFromSlot(_selectedSlotIndex, 1);
+            }
+        }
+        [Command]
+        public void CmdDropSelectedItem()
+        {
+            InventorySlot slot = _inventory.GetSlotServer(_selectedSlotIndex);
+
+            if (slot.IsEmpty)
+                return;
+
+            ItemConfig item = _itemDatabase.Get(slot.ItemId);
+
+            if (item == null)
+                return;
+
+            _inventory.RemoveItemFromSlot(_selectedSlotIndex, 1);
+        }
+        public void OnEscape()
+        {
+            _selectedSlotIndex = -1;
+        }
     }
 }

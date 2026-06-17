@@ -2,125 +2,128 @@
     using System.Collections.Generic;
     using UnityEngine.UI;
 using Zenject;
-public class PlayerInventoryUI : MonoBehaviour
+namespace Gameplay.Player
 {
+    public class PlayerInventoryUI : MonoBehaviour
+    {
         private Inventory _inventory;
-    private PlayerInventory _playerInventory;
-    [SerializeField] private List<InventorySlotUI> _slotsUI;
-     private ItemDatabase _itemDatabase;
-    private int _currentSlot = -1;
-    [Inject]
-    private void Construct(ItemDatabase itemDatabase)
-    {
-        _itemDatabase = itemDatabase;
-    }
-    private void CheckInjection()
-    {
-        if (_itemDatabase == null)
+        private PlayerInventory _playerInventory;
+        [SerializeField] private List<InventorySlotUI> _slotsUI;
+        private ItemDatabase _itemDatabase;
+        private int _currentSlot = -1;
+        [Inject]
+        private void Construct(ItemDatabase itemDatabase)
         {
-            var container = ProjectContext.Instance.Container;
-            container.Inject(this);
+            _itemDatabase = itemDatabase;
         }
-    }
-    public void Init(Inventory inventory, PlayerInventory player)
-    {
-        CheckInjection();
-        _inventory = inventory;
-        _playerInventory = player;
-        if (_inventory == null || !_inventory.isLocalPlayer)
+        private void CheckInjection()
         {
-            Debug.Log("Inventory isLocalPlayer: " + _inventory.isLocalPlayer);
-            gameObject.SetActive(false);
-            return;
+            if (_itemDatabase == null)
+            {
+                var container = ProjectContext.Instance.Container;
+                container.Inject(this);
+            }
         }
-                _slotsUI = new List<InventorySlotUI>(GetComponentsInChildren<InventorySlotUI>());
+        public void Init(Inventory inventory, PlayerInventory player)
+        {
+            CheckInjection();
+            _inventory = inventory;
+            _playerInventory = player;
+            if (_inventory == null || !_inventory.isLocalPlayer)
+            {
+                Debug.Log("Inventory isLocalPlayer: " + _inventory.isLocalPlayer);
+                gameObject.SetActive(false);
+                return;
+            }
+            _slotsUI = new List<InventorySlotUI>(GetComponentsInChildren<InventorySlotUI>());
 
-        for (int i = 0; i < _slotsUI.Count; i++)
-        {
-            _slotsUI[i].Init(i);
-            _slotsUI[i].Clicked += OnSlotClicked;
+            for (int i = 0; i < _slotsUI.Count; i++)
+            {
+                _slotsUI[i].Init(i);
+                _slotsUI[i].Clicked += OnSlotClicked;
+            }
+            _inventory.OnInventoryChanged -= RefreshUI;
+            _inventory.OnInventoryChanged += RefreshUI;
+            RefreshUI();
+            _playerInventory.OnSelectedSlotChangedEvent -= SlotClear;
+            _playerInventory.OnSelectedSlotChangedEvent += SlotClear;
         }
-        _inventory.OnInventoryChanged -= RefreshUI;
-        _inventory.OnInventoryChanged += RefreshUI;
-        RefreshUI();
-        _playerInventory.OnSelectedSlotChangedEvent -= SlotClear;
-        _playerInventory.OnSelectedSlotChangedEvent += SlotClear;
-    }
-    private void OnDestroy()
-    {
-        for (int i = 0; i < _slotsUI.Count; i++)
+        private void OnDestroy()
         {
-            _slotsUI[i].Clicked -= OnSlotClicked;
+            for (int i = 0; i < _slotsUI.Count; i++)
+            {
+                _slotsUI[i].Clicked -= OnSlotClicked;
+            }
+            _playerInventory.OnSelectedSlotChangedEvent -= SlotClear;
         }
-        _playerInventory.OnSelectedSlotChangedEvent -= SlotClear;
-    }
-    private void OnEnable()
-    {
-        if (_inventory == null)
-            return;
-        _inventory.OnInventoryChanged += RefreshUI;
-        _playerInventory.OnSelectedSlotChangedEvent += SlotClear;
-    }
-    private void OnDisable()
+        private void OnEnable()
         {
-        if (_inventory == null) return;
+            if (_inventory == null)
+                return;
+            _inventory.OnInventoryChanged += RefreshUI;
+            _playerInventory.OnSelectedSlotChangedEvent += SlotClear;
+        }
+        private void OnDisable()
+        {
+            if (_inventory == null) return;
 
-        _inventory.OnInventoryChanged -= RefreshUI;
-        _playerInventory.OnSelectedSlotChangedEvent -= SlotClear;
-    }
+            _inventory.OnInventoryChanged -= RefreshUI;
+            _playerInventory.OnSelectedSlotChangedEvent -= SlotClear;
+        }
         public void RefreshUI()
         {
-        if (_inventory == null) return;
+            if (_inventory == null) return;
 
-        for (int i = 0; i < _slotsUI.Count; i++)
-        {
-            if (i >= _inventory.Slots.Count)
+            for (int i = 0; i < _slotsUI.Count; i++)
             {
-                _slotsUI[i].Clear();
-                continue;
+                if (i >= _inventory.Slots.Count)
+                {
+                    _slotsUI[i].Clear();
+                    continue;
+                }
+
+                InventorySlot slot = _inventory.Slots[i];
+
+                if (slot.IsEmpty)
+                {
+                    _slotsUI[i].Clear();
+                    continue;
+                }
+
+                ItemConfig item = _itemDatabase.Get(slot.ItemId);
+
+                _slotsUI[i].Set(item.Icon, slot);
             }
+        }
 
-            InventorySlot slot = _inventory.Slots[i];
+        private void OnSlotClicked(int slotIndex)
+        {
+            if (_inventory == null) return;
+            if (_currentSlot >= 0 && _currentSlot < _slotsUI.Count) _slotsUI[_currentSlot].OnUnSelected();
 
-            if (slot.IsEmpty)
+            if (_currentSlot == slotIndex)
             {
-                _slotsUI[i].Clear();
-                continue;
+                _currentSlot = -1;
             }
-
-            ItemConfig item = _itemDatabase.Get(slot.ItemId);
-
-            _slotsUI[i].Set(item.Icon, slot);
+            else
+            {
+                _currentSlot = slotIndex;
+                _slotsUI[_currentSlot].OnSelected();
+            }
+            _playerInventory.CmdSelectSlot(_currentSlot);
+            Debug.Log(_currentSlot);
         }
-    }
 
-    private void OnSlotClicked(int slotIndex)
-    {
-        if(_inventory  == null) return;
-        if (_currentSlot >= 0 && _currentSlot < _slotsUI.Count) _slotsUI[_currentSlot].OnUnSelected();
-
-        if (_currentSlot == slotIndex)
+        private void SlotClear(int i)
         {
-            _currentSlot = -1;
-        }
-        else
-        {
-            _currentSlot = slotIndex;
-            _slotsUI[_currentSlot].OnSelected();
-        }
-        _playerInventory.CmdSelectSlot(_currentSlot);
-        Debug.Log(_currentSlot);
-    }
-
-    private void SlotClear(int i)
-    {
-        if (i != -1) return;
-        if (_currentSlot >= 0 && _currentSlot < _slotsUI.Count) { 
+            if (i != -1) return;
+            if (_currentSlot >= 0 && _currentSlot < _slotsUI.Count)
+            {
                 _slotsUI[_currentSlot].OnUnSelected();
-            Debug.Log("esc1");
+                Debug.Log("esc1");
+            }
+            _currentSlot = -1;
+            Debug.Log("esc");
         }
-        _currentSlot = -1;
-        Debug.Log("esc");
     }
 }
-

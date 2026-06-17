@@ -1,23 +1,26 @@
 using UnityEngine;
 using Zenject;
 
-public class ShopHandler : MonoBehaviour, IInteractable
+namespace Gameplay.Player.UI.Shop
 {
-    private ShopBuilderUi _shopUi;
-
-    public string InteractionPrompt => "Open shop";
-    [Inject]
-    public void Construct(ShopBuilderUi shopUi)
+    public class ShopHandler : MonoBehaviour, IInteractable
     {
-        _shopUi = shopUi;
-    }
-    public void Interact(GameObject interactor)
-    {
-        var shopServer = interactor.GetComponent<PlayerShopServer>();
+        private ShopBuilderUi _shopUi;
 
-        if (shopServer != null)
+        public string InteractionPrompt => "Open shop";
+        [Inject]
+        public void Construct(ShopBuilderUi shopUi)
         {
-            _shopUi.OpenShop(shopServer);
+            _shopUi = shopUi;
+        }
+        public void Interact(GameObject interactor)
+        {
+            var shopServer = interactor.GetComponent<PlayerShopServer>();
+
+            if (shopServer != null)
+            {
+                _shopUi.OpenShop(shopServer);
+            }
         }
     }
 }

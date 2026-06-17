@@ -1,8 +1,10 @@
 using System;
-using UnityEngine;
 
-public interface IHarvestable
+namespace Gameplay.Farm
 {
-    public void StartHarvesting(uint ownerId,ItemSeed seed);
-    public event Action OnDestroyedServer;
+    public interface IHarvestable
+    {
+        public void StartHarvesting(uint ownerId, ItemSeed seed);
+        public event Action OnDestroyedServer;
+    }
 }

@@ -38,9 +38,9 @@ public class VehicleHandler : MonoBehaviour
     }
     public void CmdInteract(NetworkIdentity target)
     {
-        var enter = target.GetComponent<PlayerEnterExitVehicle>().EnterVehicle(this);
+        //var enter = target.GetComponent<PlayerEnterExitVehicle>().EnterVehicle(this);
 
-        if (!enter) return;
+        //if (!enter) return;
 
         inVehicle = true;
         Initialize(target.GetComponent<PlayerInput>());

@@ -1,9 +1,11 @@
 using Mirror;
 using Zenject;
 
+namespace Gameplay.Player
+{ 
 public class PlayerShopServer : NetworkBehaviour
 {
-     private ItemDatabase _database;
+    private ItemDatabase _database;
     private Inventory _inventory;
     [Inject]
     public void Construct(ItemDatabase database)
@@ -30,15 +32,16 @@ public class PlayerShopServer : NetworkBehaviour
     {
         if (_database == null)
         {
-            UnityEngine.Debug.LogError("[SERVER] Ошибка покупки: _database равен null на сервере!");
+            UnityEngine.Debug.LogError("[SERVER] Error Buy: _database null!");
             return;
         }
 
         if (_inventory == null)
         {
-            UnityEngine.Debug.LogError("[SERVER] Ошибка покупки: Компонент Inventory не найден!");
+            UnityEngine.Debug.LogError("[SERVER] Error Buy:  Inventory didnt found!");
             return;
         }
         _inventory.TryAddItem(itemId);
     }
+}
 }

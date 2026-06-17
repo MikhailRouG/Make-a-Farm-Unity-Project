@@ -2,46 +2,49 @@ using Mirror;
 using System;
 using UnityEngine;
 
-public class Fruit : NetworkBehaviour, IInteractable
+namespace Gameplay.Farm
 {
-    [SyncVar]
-    private uint _ownerId;
-    private Plant _parent;
-    private ItemConfig _item;
-    public event Action OnDestroyedServer;
-    public string InteractionPrompt =>"Collect the plant";
-    public override void OnStartClient()
+    public class Fruit : NetworkBehaviour, IInteractable
     {
-        base.OnStartClient();
-    }
-    public void Init(uint ownerId, ItemConfig item)
-    {
-        if (!isServer) return;
-        _ownerId = ownerId;
-        _item = item;
-    }
-    [Server]
-    public void Interact(GameObject interactor)
-    {
-        if (_item == null)
+        [SyncVar]
+        private uint _ownerId;
+        private Plant _parent;
+        private ItemConfig _item;
+        public event Action OnDestroyedServer;
+        public string InteractionPrompt => "Collect the plant";
+        public override void OnStartClient()
         {
-            Debug.Log("Item == null", this);
-            return;
+            base.OnStartClient();
         }
+        public void Init(uint ownerId, ItemConfig item)
+        {
+            if (!isServer) return;
+            _ownerId = ownerId;
+            _item = item;
+        }
+        [Server]
+        public void Interact(GameObject interactor)
+        {
+            if (_item == null)
+            {
+                Debug.Log("Item == null", this);
+                return;
+            }
 
             if (interactor.TryGetComponent<Inventory>(out Inventory inventory))
-        {
-            if (inventory.TryAddItem(_item.Id, 1))
             {
-                NetworkServer.Destroy(gameObject);
+                if (inventory.TryAddItem(_item.Id, 1))
+                {
+                    NetworkServer.Destroy(gameObject);
+                }
             }
         }
-    }
-    public override void OnStopServer()
-    {
-        OnDestroyedServer?.Invoke();
-        OnDestroyedServer = null;
+        public override void OnStopServer()
+        {
+            OnDestroyedServer?.Invoke();
+            OnDestroyedServer = null;
 
-        base.OnStopServer();
+            base.OnStopServer();
+        }
     }
 }
