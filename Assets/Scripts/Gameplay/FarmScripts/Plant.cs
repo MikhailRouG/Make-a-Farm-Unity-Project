@@ -159,6 +159,9 @@ namespace Gameplay.Farm
         }
         private void OnLastStage()
         {
+            if (isClient)
+                OnUpdateStage?.Invoke(EffectState.Grow, "Can be collected");
+
             if (!isServer) return;
             GameObject obj = Instantiate(
                _seed.Stages[_seed.Stages.Length - 1],
@@ -170,7 +173,6 @@ namespace Gameplay.Farm
             {
                 component.StartHarvesting(_ownerNetId, _seed);
                 component.OnDestroyedServer += OnDestroyedPlant;
-                OnUpdateStage?.Invoke(EffectState.Harvest, "Can be collected");
             }
             else
             {

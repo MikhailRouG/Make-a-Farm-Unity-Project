@@ -23,7 +23,6 @@ MonoBehaviour:
   <PlantStartObject>k__BackingField: {fileID: 2921874841248964185, guid: 8e38d98a4c572cd4d94e4112e9c29cdd, type: 3}
   <Stages>k__BackingField:
   - {fileID: 4830069918918255618, guid: 2e4b8508f7329ac4b92d489800ce38a5, type: 3}
-  - {fileID: 4830069918918255618, guid: 75c7977e788894d4a9d4b5eec02df6f6, type: 3}
   - {fileID: 3126114035409639131, guid: 830c003de740cf94e9c3a8bf827f6f06, type: 3}
   - {fileID: 6679327620857613801, guid: 9961a7c9e2871af4c9c7987a3e20aa95, type: 3}
   - {fileID: 2520595524603225583, guid: 4ba1bb81785b6f344b31b0cbaa8c67d2, type: 3}

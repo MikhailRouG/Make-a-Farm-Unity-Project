@@ -22,21 +22,45 @@ namespace Gameplay.Farm
         }
         private void Awake()
         {
-            _target = NetworkClient.localPlayer.gameObject.transform;
-            _cameraTransform = Camera.main.transform;
-            _textObject.text = string.Empty;
             _currentTime = 5f;
-            _plant.OnUpdateStage += UpdateTime;
+            if (_plant != null)
+            {
+                _plant.OnUpdateStage += UpdateTime;
+            }
         }
+        private void OnEnable()
+        {
+            _textObject.text = string.Empty;
+            isTextVisible = false;
 
+            if (Camera.main != null)
+            {
+                _cameraTransform = Camera.main.transform;
+            }
+        }
         private void Update()
         {
-            if (_target == null) return;
+            if (_target == null)
+            {
+                if (NetworkClient.localPlayer != null)
+                {
+                    _target = NetworkClient.localPlayer.transform;
+                }
+                else
+                {
+                    return;
+                }
+            }
             if (_cameraTransform == null)
             {
-                if (Camera.main == null) return;
-
-                _cameraTransform = Camera.main.transform;
+                if (Camera.main != null)
+                {
+                    _cameraTransform = Camera.main.transform;
+                }
+                else
+                {
+                    return;
+                }
             }
             float sqrDistance = (_target.position - transform.position).sqrMagnitude;
             bool shouldShow = sqrDistance <= (_showDistance * _showDistance);
