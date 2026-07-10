@@ -4,6 +4,9 @@ using Mirror;
 using Zenject;
 public class Inventory : NetworkBehaviour
 {
+    [SyncVar(hook = nameof(OnMoneySyncChanged))]
+    private int _money;
+    public event Action<int> OnMoneyChanged;
     [Header("Settings")]
     [SerializeField] private int _maxSlots = 9;
     private ItemDatabase _itemDatabase;
@@ -12,9 +15,13 @@ public class Inventory : NetworkBehaviour
 
 
     [Inject]
-    private void Construct(ItemDatabase itemDatabase)
+    public void Construct(ItemDatabase itemDatabase)
     {
         _itemDatabase = itemDatabase;
+    }
+    private void OnMoneySyncChanged(int oldValue, int newValue)
+    {
+        OnMoneyChanged?.Invoke(newValue);
     }
     private void CheckInjection()
     {
@@ -65,19 +72,48 @@ public class Inventory : NetworkBehaviour
     {
         return slotIndex >= 0 && slotIndex < Slots.Count;
     }
-    
-
-    // SERVER API
-    public bool TryAddItem(int itemId, int amount = 1)
+    [Server]
+    public bool HasMoneyCount(int price)
+    {
+        return _money > price;
+    }
+    [Server]
+    public bool TryAddMoney(int amount)
     {
         if (amount <= 0)
+            return false;
+
+        if (_money > int.MaxValue - amount)
+            return false;
+
+        _money += amount;
+        Debug.Log(_money);
+        return true;
+    }
+
+    [Server]
+    public bool TrySpendMoney(int amount)
+    {
+        if (amount < 0)
+            return false;
+
+        if (_money < amount)
+            return false;
+
+        _money -= amount;
+        return true;
+    }
+
+    [Server]
+    public bool TryAddItem(int itemId, int amount = 1)
+    {
+        if (amount < 0)
             return false;
 
         ItemConfig item = _itemDatabase.Get(itemId);
 
         if (item == null)
             return false;
-
         if (item.IsStackable)
         {
             amount = AddToExistingStacks(item, itemId, amount);
@@ -136,11 +172,12 @@ public class Inventory : NetworkBehaviour
         return false;
     }
     [Server]
-    public bool TryRemoveItem(int itemId, int amount)
+    public bool TryRemoveItem(int itemId, int amount = 1)
     {
         if (!HasItem(itemId, amount))
             return false;
-
+        if (amount <= 0)
+            return false;
         int remaining = amount;
 
         for (int i = 0; i < Slots.Count; i++)

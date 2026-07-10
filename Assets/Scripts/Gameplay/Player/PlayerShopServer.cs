@@ -26,8 +26,12 @@ public class PlayerShopServer : NetworkBehaviour
     {
         TryBuyItem(itemId);
     }
-
-    [Server]
+        [Command]
+        public void CmdSellItem(int itemId)
+        {
+            TrySellItem(itemId);
+        }
+        [Server]
     private void TryBuyItem(int itemId)
     {
         if (_database == null)
@@ -41,7 +45,32 @@ public class PlayerShopServer : NetworkBehaviour
             UnityEngine.Debug.LogError("[SERVER] Error Buy:  Inventory didnt found!");
             return;
         }
-        _inventory.TryAddItem(itemId);
+            ItemConfig item = _database.Get(itemId);
+            if (_inventory.TrySpendMoney(item.Price))
+            { 
+                _inventory.TryAddItem(itemId);
+            }
     }
-}
+
+        [Server]
+        private void TrySellItem(int itemId)
+        {
+            if (_database == null)
+            {
+                UnityEngine.Debug.LogError("[SERVER] Error Buy: _database null!");
+                return;
+            }
+
+            if (_inventory == null)
+            {
+                UnityEngine.Debug.LogError("[SERVER] Error Buy:  Inventory didnt found!");
+                return;
+            }
+            if (_inventory.TryRemoveItem(itemId))
+            {
+                ItemConfig item = _database.Get(itemId);
+                _inventory.TryAddMoney(item.Price);
+            }
+        }
+    }
 }

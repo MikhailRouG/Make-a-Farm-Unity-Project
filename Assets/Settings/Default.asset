@@ -83,16 +83,16 @@ MonoBehaviour:
   active: 1
   color:
     m_OverrideState: 1
-    m_Value: {r: 0, g: 0.75510234, b: 0.8490566, a: 1}
+    m_Value: {r: 0, g: 0.93309736, b: 1, a: 1}
   center:
     m_OverrideState: 0
     m_Value: {x: 0.5, y: 0.5}
   intensity:
     m_OverrideState: 1
-    m_Value: 0.25
+    m_Value: 0.369
   smoothness:
     m_OverrideState: 1
-    m_Value: 0.15
+    m_Value: 0.2
   rounded:
     m_OverrideState: 1
     m_Value: 0
@@ -190,7 +190,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b2db86121404754db890f4c8dfe81b2, type: 3}
   m_Name: Bloom
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.Bloom
-  active: 0
+  active: 1
   skipIterations:
     m_OverrideState: 1
     m_Value: 1
@@ -242,11 +242,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.LiftGammaGain
   active: 1
   lift:
-    m_OverrideState: 0
-    m_Value: {x: 1, y: 1, z: 1, w: 0}
+    m_OverrideState: 1
+    m_Value: {x: 0.89403135, y: 0.9465627, z: 1, w: -0.017513134}
   gamma:
     m_OverrideState: 1
-    m_Value: {x: 1, y: 0.9992719, z: 0.9645234, w: 0.07943514}
+    m_Value: {x: 1, y: 0.9826733, z: 0.90872896, w: 0.22767073}
   gain:
     m_OverrideState: 1
-    m_Value: {x: 0.9678484, y: 1, z: 0.9820855, w: 0.06178289}
+    m_Value: {x: 0.9948062, y: 1, z: 0.929627, w: 0.070052534}

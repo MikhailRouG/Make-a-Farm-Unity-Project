@@ -6,6 +6,7 @@ namespace Gameplay.Player
     public class PlayerUIPanel : MonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI _interactionText;
+        [SerializeField] private TextMeshProUGUI _moneyText;
         private PlayerInteraction _interaction;
         [SerializeField] private PlayerInventoryUI inventoryUI;
         public void Bind(
@@ -21,6 +22,7 @@ namespace Gameplay.Player
             {
                 interaction.OnHasInteraction += SetInteractionText;
             }
+            if (_moneyText != null) inventory.OnMoneyChanged += MoneyUpdate;
         }
 
         private void OnDestroy()
@@ -32,6 +34,11 @@ namespace Gameplay.Player
         {
             if (text == string.Empty) _interactionText.gameObject.SetActive(false);
             else _interactionText.gameObject.SetActive(true);
+        }
+
+        private void MoneyUpdate(int count)
+        {
+            _moneyText.text = count.ToString();
         }
     }
 }

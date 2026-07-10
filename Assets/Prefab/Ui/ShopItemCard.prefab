@@ -637,7 +637,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f165ecec3e7ed0468e3f4d04b414138, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopCardUi
-  _button: {fileID: 321414464010466969}
+  _buyButton: {fileID: 321414464010466969}
+  _sellButton: {fileID: 4417767173258176355}
   _image: {fileID: 1774380665347834006}
 --- !u!1 &6698761596536858048
 GameObject:

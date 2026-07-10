@@ -48,7 +48,8 @@ namespace Gameplay.Player.UI.Shop
                 ShopCardUi card = _cardFactory.Create();
                 card.transform.SetParent(_cardParent, false);
                 card.Build(item);
-                card.OnClick += OnSelectedItem;
+                card.OnBuyClick += OnBuyItem;
+                card.OnSellClick += OnSellItem;
                 _cards.Add(card);
             }
         }
@@ -57,15 +58,22 @@ namespace Gameplay.Player.UI.Shop
             foreach (var card in _cards)
             {
                 if (card == null) continue;
-                card.OnClick -= OnSelectedItem;
+                card.OnBuyClick -= OnBuyItem;
+                card.OnSellClick -= OnSellItem;
                 Destroy(card.gameObject);
             }
             _cards.Clear();
         }
-        public void OnSelectedItem(int id)
+        private void OnBuyItem(int id)
         {
             if (_playerShopServer == null) return;
             _playerShopServer.CmdBuyItem(id);
+        }
+
+        private void OnSellItem(int id)
+        {
+            if (_playerShopServer == null) return;
+            _playerShopServer.CmdSellItem(id);
         }
     }
 }
