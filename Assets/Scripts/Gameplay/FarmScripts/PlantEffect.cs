@@ -28,7 +28,7 @@ namespace Gameplay.Farm
             _plant.OnInitialized -= Init;
             _plant.OnUpdateStage -= PlayLocal;
         }
-        private void Init(EffectConfig effect)
+        private void Init(float size ,EffectConfig effect)
         {
             _config = effect;
         }

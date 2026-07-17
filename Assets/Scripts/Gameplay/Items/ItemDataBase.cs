@@ -5,15 +5,29 @@ using UnityEngine;
 [CreateAssetMenu]
 public class ItemDatabase : ScriptableObject
 {
-    public static ItemDatabase Instance;
+    private static ItemDatabase _instance;
+    public static ItemDatabase Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = Resources.Load<ItemDatabase>("ItemDatabase");
+
+                if (_instance == null)
+                    Debug.LogError("ItemDatabase.asset not found in Resources!");
+            }
+
+            return _instance;
+        }
+    }
+
     public List<ItemConfig> items;
 
     private Dictionary<int, ItemConfig> _map;
 
     public void Init()
     {
-        Instance = this;
-
         _map = new Dictionary<int, ItemConfig>();
 
         foreach (var item in items)

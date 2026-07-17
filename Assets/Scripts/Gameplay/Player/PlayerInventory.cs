@@ -1,7 +1,6 @@
 using Mirror;
 using System;
 using UnityEngine;
-using Zenject;
 
 namespace Gameplay.Player
 {
@@ -10,29 +9,16 @@ namespace Gameplay.Player
     {
         private Inventory _inventory;
         private Player _player;
-        private ItemDatabase _itemDatabase;
+        private ItemDatabase _database;
 
         [SyncVar(hook = nameof(OnSelectedSlotChanged))]
         private int _selectedSlotIndex;
         public int SelectedSlotIndex => _selectedSlotIndex;
         public event Action<int> OnSelectedSlotChangedEvent;
 
-        [Inject]
-        private void Construct(ItemDatabase itemDatabase)
-        {
-            _itemDatabase = itemDatabase;
-        }
-        private void CheckInjection()
-        {
-            if (_itemDatabase == null)
-            {
-                var container = ProjectContext.Instance.Container;
-                container.Inject(this);
-            }
-        }
         private void Awake()
         {
-            CheckInjection();
+            _database = ItemDatabase.Instance;
             _inventory = GetComponent<Inventory>();
             _player = GetComponent<Player>();
             _player.onUseItem += CmdUseSelectedItem;
@@ -52,7 +38,7 @@ namespace Gameplay.Player
             InventorySlot slot = _inventory.GetSlotServer(_selectedSlotIndex);
             if (slot.IsEmpty)
                 return;
-            ItemConfig item = _itemDatabase.Get(slot.ItemId);
+            ItemConfig item = _database.Get(slot.ItemId);
 
             if (item == null)
                 return;
@@ -77,7 +63,7 @@ namespace Gameplay.Player
             if (slot.IsEmpty)
                 return;
 
-            ItemConfig item = _itemDatabase.Get(slot.ItemId);
+            ItemConfig item = _database.Get(slot.ItemId);
 
             if (item == null)
                 return;

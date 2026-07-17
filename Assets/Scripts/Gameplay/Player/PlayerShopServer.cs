@@ -1,24 +1,16 @@
 using Mirror;
-using Zenject;
 
 namespace Gameplay.Player
 { 
 public class PlayerShopServer : NetworkBehaviour
 {
+    
     private ItemDatabase _database;
     private Inventory _inventory;
-    [Inject]
-    public void Construct(ItemDatabase database)
-    {
-        _database = database;
-    }
+
     private void Awake()
     {
-        if (_database == null)
-        {
-            var container = ProjectContext.Instance.Container;
-            container.Inject(this);
-        }
+            _database = ItemDatabase.Instance;
         _inventory = GetComponent<Inventory>();
     }
     [Command]

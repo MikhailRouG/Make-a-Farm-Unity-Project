@@ -2,7 +2,7 @@ using Mirror;
 using System;
 using System.Collections;
 using UnityEngine;
-using Zenject;
+using Random = UnityEngine.Random;
 
 namespace Gameplay.Farm
 {
@@ -15,19 +15,15 @@ namespace Gameplay.Farm
         private int _stageIndex = -1;
 
         [SyncVar] private uint _ownerNetId;
-
+        [SyncVar] private float _size;
         private ItemDatabase _database;
         private ItemSeed _seed;
         private GameObject _currentVisual;
         private Coroutine _growCoroutine;
 
-        public event Action<EffectConfig> OnInitialized;
+        public event Action<float,EffectConfig> OnInitialized;
         public event Action<EffectState, string> OnUpdateStage;
-        [Inject]
-        private void Construct(ItemDatabase database)
-        {
-            _database = database;
-        }
+
         private ItemSeed Seed
         {
             get
@@ -35,14 +31,7 @@ namespace Gameplay.Farm
                 if (_seed != null) return _seed;
                 if (_seedId < 0) return null;
 
-                if (_database == null)
-                {
-                    var container = ProjectContext.Instance.Container;
-                    container.Inject(this);
-
-                }
-                if (_database != null)
-                    _seed = _database.Get(_seedId) as ItemSeed;
+                _seed = _database.Get(_seedId) as ItemSeed;
 
                 return _seed;
             }
@@ -50,8 +39,7 @@ namespace Gameplay.Farm
 
         private void Awake()
         {
-            var container = ProjectContext.Instance.Container;
-            container.Inject(this);
+            _database = ItemDatabase.Instance;
         }
         public override void OnStartClient()
         {
@@ -61,7 +49,7 @@ namespace Gameplay.Farm
 
             if (seed == null)
                 return;
-            OnInitialized?.Invoke(seed.Effect);
+            OnInitialized?.Invoke(_size,seed.Effect);
         }
         [Server]
         public void Init(uint ownerId, int id)
@@ -70,7 +58,7 @@ namespace Gameplay.Farm
             _ownerNetId = ownerId;
             _seedId = id;
             _stageIndex = 0;
-
+            _size = Random.Range(0.2f, 2.0f);
             if (_growCoroutine != null) StopCoroutine(_growCoroutine);
             _growCoroutine = StartCoroutine(GrowRoutine());
 
@@ -80,7 +68,6 @@ namespace Gameplay.Farm
         private IEnumerator GrowRoutine()
         {
             yield return new WaitUntil(() => _seedId >= 0);
-            yield return new WaitUntil(() => _database != null || ItemDatabase.Instance != null);
             yield return new WaitUntil(() => Seed != null);
 
             while (_stageIndex < Seed.Stages.Length - 1)
@@ -96,7 +83,7 @@ namespace Gameplay.Farm
                 }
             }
         }
-
+        [Client]
         private void TryUpdateVisual()
         {
             if (!isClient) return;
@@ -135,13 +122,17 @@ namespace Gameplay.Farm
                 Quaternion.identity,
                 transform
             );
-            if (!isClient) return;
+
             if (_stageIndex == 0)
             {
-                OnInitialized?.Invoke(_seed.Effect);
+                OnInitialized?.Invoke(_size ,_seed.Effect);
                 OnUpdateStage?.Invoke(EffectState.Start, _seed.TimePerStage.ToString());
             }
             else OnUpdateStage?.Invoke(EffectState.Upgrade, _seed.TimePerStage.ToString());
+            if (_currentVisual.TryGetComponent<AppearAnimation>(out var animation))
+            {
+                animation.Initialize(_size);
+            }
         }
         private void OnStageChanged(int oldStage, int newStage)
         {
@@ -157,6 +148,7 @@ namespace Gameplay.Farm
             _seed = null;
             TryUpdateVisual();
         }
+        [Server]
         private void OnLastStage()
         {
             if (isClient)
@@ -168,16 +160,16 @@ namespace Gameplay.Farm
                transform.position,
                Quaternion.identity
            );
-            NetworkServer.Spawn(obj);
             if (obj.TryGetComponent<IHarvestable>(out IHarvestable component))
             {
-                component.StartHarvesting(_ownerNetId, _seed);
+                component.StartHarvesting(_ownerNetId, _seed.Id, _size);
                 component.OnDestroyedServer += OnDestroyedPlant;
             }
             else
             {
                 Debug.LogWarning($"[Plant] {obj.name} IHarvestable! .");
             }
+            NetworkServer.Spawn(obj);
         }
         private void OnDestroy()
         {

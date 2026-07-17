@@ -6,10 +6,10 @@ namespace Gameplay.Farm
     public class AppearAnimation : MonoBehaviour
     {
         [SerializeField] private AnimationCurve scaleCurve;
-        [SerializeField] private float animationDuration = 0.5f;
-
-        private Vector3 initialScale;
-        private Coroutine animationCoroutine;
+        [SerializeField] private float animationDuration =1f;
+        private float _size;
+        private Vector3 _initialScale;
+        private Coroutine _animationCoroutine;
 
         private void OnValidate()
         {
@@ -22,31 +22,31 @@ namespace Gameplay.Farm
                 );
             }
         }
-
         private void Awake()
         {
-            initialScale = transform.localScale;
-
+            _initialScale = transform.localScale;
         }
-
-        private void OnEnable()
-        {
-            if (animationCoroutine != null)
-            {
-                StopCoroutine(animationCoroutine);
-            }
-
-            animationCoroutine = StartCoroutine(AnimateScale());
-        }
-
         private void OnDisable()
         {
-            if (animationCoroutine != null)
+            if (_animationCoroutine != null)
             {
-                StopCoroutine(animationCoroutine);
+                StopCoroutine(_animationCoroutine);
+                _animationCoroutine = null;
             }
-            animationCoroutine = null;
         }
+        public void Initialize(float size)
+        {
+            if (!isActiveAndEnabled)
+                return;
+
+            _size = Mathf.Max(0f, size);
+
+            if (_animationCoroutine != null)
+                StopCoroutine(_animationCoroutine);
+
+            _animationCoroutine = StartCoroutine(AnimateScale());
+        }
+
         private IEnumerator AnimateScale()
         {
             float timer = 0f;
@@ -57,17 +57,17 @@ namespace Gameplay.Farm
 
                 float normalizedTime = timer / animationDuration;
 
-                float curveValue = scaleCurve.Evaluate(normalizedTime);
+                float curveValue = scaleCurve.Evaluate(normalizedTime) * _size;
 
-                transform.localScale = initialScale * curveValue;
+                transform.localScale = _initialScale * curveValue;
 
                 yield return null;
             }
 
-            float finalCurveValue = scaleCurve.Evaluate(1f);
-            transform.localScale = initialScale * finalCurveValue;
+            float finalCurveValue = scaleCurve.Evaluate(1f) * _size;
+            transform.localScale = _initialScale * finalCurveValue;
 
-            animationCoroutine = null;
+            _animationCoroutine = null;
         }
     }
 }

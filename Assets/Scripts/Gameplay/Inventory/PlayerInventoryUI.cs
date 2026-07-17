@@ -1,7 +1,6 @@
     using UnityEngine;
     using System.Collections.Generic;
     using UnityEngine.UI;
-using Zenject;
 namespace Gameplay.Player
 {
     public class PlayerInventoryUI : MonoBehaviour
@@ -11,22 +10,13 @@ namespace Gameplay.Player
         [SerializeField] private List<InventorySlotUI> _slotsUI;
         private ItemDatabase _itemDatabase;
         private int _currentSlot = -1;
-        [Inject]
-        private void Construct(ItemDatabase itemDatabase)
+
+        private void Awake()
         {
-            _itemDatabase = itemDatabase;
-        }
-        private void CheckInjection()
-        {
-            if (_itemDatabase == null)
-            {
-                var container = ProjectContext.Instance.Container;
-                container.Inject(this);
-            }
+            _itemDatabase = ItemDatabase.Instance;
         }
         public void Init(Inventory inventory, PlayerInventory player)
         {
-            CheckInjection();
             _inventory = inventory;
             _playerInventory = player;
             if (_inventory == null || !_inventory.isLocalPlayer)

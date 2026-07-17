@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <Id>k__BackingField: 101
   <Name>k__BackingField: Tomato Seed
-  <Price>k__BackingField: 5
+  <Price>k__BackingField: 0
   <Icon>k__BackingField: {fileID: 21300000, guid: 93c95c6e84f79dd44a4b5833c291d370, type: 3}
   <Model>k__BackingField: {fileID: 0}
   <IsStackable>k__BackingField: 1

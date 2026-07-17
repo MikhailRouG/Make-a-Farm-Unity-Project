@@ -13,14 +13,14 @@ namespace Gameplay.Player.UI.Shop
 
 
         [Inject]
-        public void Construct(ItemDatabase database, ShopCardUi.Factory cardFactory)
+        public void Construct(ShopCardUi.Factory cardFactory)
         {
-            _database = database;
-            if (_database == null)
-            {
-                Debug.LogError("[ShopBuilderUi] _database = null!");
-            }
             _cardFactory = cardFactory;
+        }
+
+        private void Awake()
+        {
+            _database = ItemDatabase.Instance;
         }
         public void OpenShop(PlayerShopServer buyer)
         {
@@ -37,11 +37,6 @@ namespace Gameplay.Player.UI.Shop
         private void BuildShop()
         {
             ClearShop();
-            if (_database == null)
-            {
-                Debug.LogError("[ShopBuilderUi] _database равен null!");
-                return;
-            }
             var items = _database.GetAllItem();
             foreach (var item in items)
             {

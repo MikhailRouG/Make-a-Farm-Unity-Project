@@ -10,6 +10,7 @@ namespace Gameplay.Farm
         [SerializeField] private int _fruitCount = 3;
         private int _currentCount;
         private uint _ownerId;
+        private int _seedId;
         private ItemSeed _seed;
 
         public event System.Action OnDestroyedServer;
@@ -31,11 +32,11 @@ namespace Gameplay.Farm
                 _fruitPoint = new Transform[] { _stem };
             }
         }
-        public void StartHarvesting(uint ownerId, ItemSeed seed)
+        public void StartHarvesting(uint ownerId, int seed, float size)
         {
             if (!isServer) return;
             _ownerId = ownerId;
-            _seed = seed;
+            _seedId = seed;
             SpawnFruits();
         }
 

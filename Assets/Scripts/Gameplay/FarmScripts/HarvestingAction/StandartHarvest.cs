@@ -6,33 +6,137 @@ namespace Gameplay.Farm
 {
     public class StandartHarvest : NetworkBehaviour, IHarvestable, IInteractable
     {
+        [SyncVar]
         private uint _ownerId;
+
+        [SyncVar]
+        private int _seedId = -1;
+
+        [SyncVar(hook = nameof(OnSizeChanged))]
+        private float _size = 0;
+
+
         private ItemSeed _seed;
-        private bool isInit;
+        private ItemDatabase _database;
 
         public event Action OnDestroyedServer;
 
         public string InteractionPrompt => "Collect the plant";
 
-        public void StartHarvesting(uint ownerId, ItemSeed seed)
+        private ItemSeed Seed
         {
-            if (!isServer) return;
+            get
+            {
+                if (_seed != null)
+                    return _seed;
+
+                if (_seedId < 0 || _database == null)
+                    return null;
+
+                _seed = _database.Get(_seedId) as ItemSeed;
+                return _seed;
+            }
+        }
+        private void Awake()
+        {
+            _database = ItemDatabase.Instance;
+        }
+        private void OnSizeChanged(float oldSize, float newSize)
+{
+    InitializeVisual(newSize);
+}
+     
+        [Server]
+        public void StartHarvesting(uint ownerId, int seed, float size)
+        {
+            if (seed == 0)
+            {
+                Debug.LogWarning("[StandartHarvest] Seed is null.", this);
+                return;
+            }
+
             _ownerId = ownerId;
-            _seed = seed;
-            isInit = true;
+            _seedId = seed;
+            _seed = Seed;
+            _size = size;
+        }
+
+        public override void OnStartClient()
+        {
+            base.OnStartClient();
+
+                InitializeVisual(_size);
+        }
+        [Client]
+        private void InitializeVisual(float size)
+        {
+            if (!isActiveAndEnabled)
+                return;
+
+            AppearAnimation animation =
+                GetComponent<AppearAnimation>();
+
+            if (animation == null)
+                return;
+            animation.Initialize(size);
         }
 
         public void Interact(GameObject interactor)
         {
-            if (!isInit) return;
-            if (interactor.TryGetComponent<Inventory>(out Inventory inventory))
+            if (interactor == null)
+                return;
+
+            NetworkIdentity identity =
+                interactor.GetComponent<NetworkIdentity>();
+
+            if (identity == null)
+                return;
+
+            CmdCollect(identity);
+        }
+
+        [Command(requiresAuthority = false)]
+        private void CmdCollect(
+            NetworkIdentity interactorIdentity,
+            NetworkConnectionToClient sender = null)
+        {
+            if ( interactorIdentity == null)
+                return;
+
+            // Protection against the transfer of another party's object.
+            if (sender == null || sender.identity != interactorIdentity)
+                return;
+
+            ItemSeed seed = Seed;
+
+            if (seed == null ||
+                seed.HarvestItem == null ||
+                seed.HarvestItem.Length == 0)
             {
-                if (inventory.TryAddItem(_seed.HarvestItem[0].Id, 1))
-                {
-                    NetworkServer.Destroy(gameObject);
-                    OnDestroyedServer?.Invoke();
-                }
+                Debug.LogWarning(
+                    $"[StandartHarvest] Invalid seed data: {_seedId}",
+                    this
+                );
+
+                return;
             }
+
+            if (!interactorIdentity.TryGetComponent(
+                    out Inventory inventory))
+            {
+                return;
+            }
+
+            int itemId = seed.HarvestItem[0].Id;
+
+            if (!inventory.TryAddItem(itemId, 1))
+            {
+                Debug.LogError("Error on Add");
+                return;
+            }
+
+            OnDestroyedServer?.Invoke();
+            NetworkServer.Destroy(gameObject);
         }
     }
 }
