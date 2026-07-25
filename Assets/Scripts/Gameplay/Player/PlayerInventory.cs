@@ -72,7 +72,7 @@ namespace Gameplay.Player
         }
         public void OnEscape()
         {
-            _selectedSlotIndex = -1;
+            CmdSelectSlot(-1);
         }
     }
 }

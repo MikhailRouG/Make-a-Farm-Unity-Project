@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: RawTomato
   m_EditorClassIdentifier: 
   <Id>k__BackingField: 201
+  <Category>k__BackingField: 1
   <Name>k__BackingField: Raw tomato
   <Price>k__BackingField: 1
   <Icon>k__BackingField: {fileID: 21300000, guid: b0e336f415b6ada498ec0880d2556083, type: 3}

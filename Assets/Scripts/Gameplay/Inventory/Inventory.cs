@@ -90,7 +90,7 @@ public class Inventory : NetworkBehaviour
     }
 
     [Server]
-    public bool TryAddItem(int itemId, int amount = 1)
+    public bool TryAddItem(int itemId, int amount = 1, float size = 1f)
     {
         if (amount < 0)
             return false;
@@ -106,10 +106,16 @@ public class Inventory : NetworkBehaviour
 
         if (amount > 0)
         {
-            amount = AddToEmptySlots(item, itemId, amount);
+            amount = AddToEmptySlots(item, itemId, amount, size);
         }
 
         return amount == 0;
+    }
+
+    [Server]
+    public bool TryAddItem(InventorySlot slotData)
+    {
+        return TryAddItem(slotData.ItemId, slotData.Amount, slotData.Size);
     }
 
     [Server]
@@ -264,7 +270,7 @@ public class Inventory : NetworkBehaviour
         return amount;
     }
     [Server]
-    private int AddToEmptySlots(ItemConfig item, int itemId, int amount)
+    private int AddToEmptySlots(ItemConfig item, int itemId, int amount, float size)
     {
         for (int i = 0; i < Slots.Count; i++)
         {
@@ -277,7 +283,7 @@ public class Inventory : NetworkBehaviour
                 ? Mathf.Min(item.MaxStackSize, amount)
                 : 1;
 
-            Slots[i] = new InventorySlot(itemId, addAmount);
+            Slots[i] = new InventorySlot(itemId, addAmount, size);
 
             amount -= addAmount;
 

@@ -54,15 +54,12 @@ namespace Gameplay.Farm
         [Server]
         public void Init(uint ownerId, int id)
         {
-            Debug.Log($"[Plant Init] isServer={isServer}, itemId={id}, netId={netId}", this);
             _ownerNetId = ownerId;
             _seedId = id;
             _stageIndex = 0;
             _size = Random.Range(0.2f, 2.0f);
             if (_growCoroutine != null) StopCoroutine(_growCoroutine);
             _growCoroutine = StartCoroutine(GrowRoutine());
-
-            TryUpdateVisual();
         }
         [Server]
         private IEnumerator GrowRoutine()
@@ -70,18 +67,15 @@ namespace Gameplay.Farm
             yield return new WaitUntil(() => _seedId >= 0);
             yield return new WaitUntil(() => Seed != null);
 
-            while (_stageIndex < Seed.Stages.Length - 1)
+            int lastStage = Seed.Stages.Length - 1;
+
+            while (_stageIndex < lastStage)
             {
                 yield return new WaitForSeconds(Seed.TimePerStage);
-
                 _stageIndex++;
-                TryUpdateVisual();
-                if (_stageIndex >= Seed.Stages.Length - 1)
-                {
-                    OnLastStage();
-                    yield break;
-                }
             }
+
+            OnLastStage();
         }
         [Client]
         private void TryUpdateVisual()
@@ -136,10 +130,12 @@ namespace Gameplay.Farm
         }
         private void OnStageChanged(int oldStage, int newStage)
         {
-            Debug.Log($"{oldStage}, {newStage}");
             _stageIndex = newStage;
             TryUpdateVisual();
 
+            ItemSeed seed = Seed;
+            if (seed != null && newStage >= seed.Stages.Length - 1)
+                OnUpdateStage?.Invoke(EffectState.Grow, "Can be collected");
         }
 
         private void OnSeedSynced(int oldId, int newId)
@@ -151,10 +147,6 @@ namespace Gameplay.Farm
         [Server]
         private void OnLastStage()
         {
-            if (isClient)
-                OnUpdateStage?.Invoke(EffectState.Grow, "Can be collected");
-
-            if (!isServer) return;
             GameObject obj = Instantiate(
                _seed.Stages[_seed.Stages.Length - 1],
                transform.position,

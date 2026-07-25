@@ -11,33 +11,52 @@ namespace Gameplay.Player.UI.Shop
         private List<ShopCardUi> _cards = new();
         [SerializeField] private Transform _cardParent;
 
+        [SerializeField] private ShopTabUi[] _tabs;
+        [SerializeField] private ShopCategory _defaultCategory = ShopCategory.Seed;
 
         [Inject]
         public void Construct(ShopCardUi.Factory cardFactory)
         {
             _cardFactory = cardFactory;
         }
-
+        private void OnValidate()
+        {
+            _tabs ??= GetComponentsInChildren<ShopTabUi>();
+        }
         private void Awake()
         {
             _database = ItemDatabase.Instance;
+            foreach (var tab in _tabs)
+                tab.OnSelected += ShowCategory;
         }
         public void OpenShop(PlayerShopServer buyer)
         {
             _playerShopServer = buyer;
             gameObject.SetActive(true);
-            BuildShop();
+            ShowCategory(_defaultCategory);
         }
         public void CloseShop()
         {
             ClearShop();
             _playerShopServer = null;
             gameObject.SetActive(false);
+            SelectTab(_defaultCategory);
         }
-        private void BuildShop()
+        private void SelectTab(ShopCategory category)
+        {
+            foreach (var tab in _tabs)
+                tab.SetSelectedSilently(tab.Category == category);
+
+            ShowCategory(category);
+        }
+        private void ShowCategory(ShopCategory category)
+        {
+            BuildShop(_database.GetByCategory(category));
+        }
+
+        private void BuildShop(IReadOnlyList<ItemConfig> items)
         {
             ClearShop();
-            var items = _database.GetAllItem();
             foreach (var item in items)
             {
                 ShopCardUi card = _cardFactory.Create();

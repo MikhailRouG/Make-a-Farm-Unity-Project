@@ -8,20 +8,50 @@ namespace Gameplay.Farm
     {
         [SyncVar]
         private uint _ownerId;
+
+        [SyncVar(hook = nameof(OnSizeChanged))]
+        private float _size = 1f;
+
         private Plant _parent;
         private ItemConfig _item;
+        private Vector3 _baseScale;
         public event Action OnDestroyedServer;
         public string InteractionPrompt => "Collect the plant";
+
+        private void Awake()
+        {
+            _baseScale = transform.localScale;
+        }
+
         public override void OnStartClient()
         {
             base.OnStartClient();
+            InitializeVisual(_size);
         }
-        public void Init(uint ownerId, ItemConfig item)
+        [Server]
+        public void Init(uint ownerId, ItemConfig item, float size)
         {
-            if (!isServer) return;
             _ownerId = ownerId;
             _item = item;
+            _size = size;
         }
+
+        private void OnSizeChanged(float oldSize, float newSize)
+        {
+            InitializeVisual(newSize);
+        }
+
+        [Client]
+        private void InitializeVisual(float size)
+        {
+            if (!isActiveAndEnabled) return;
+
+            if (TryGetComponent<AppearAnimation>(out var animation))
+                animation.Initialize(size);
+            else
+                transform.localScale = _baseScale * size;
+        }
+
         [Server]
         public void Interact(GameObject interactor)
         {
@@ -33,7 +63,7 @@ namespace Gameplay.Farm
 
             if (interactor.TryGetComponent<Inventory>(out Inventory inventory))
             {
-                if (inventory.TryAddItem(_item.Id, 1))
+                if (inventory.TryAddItem(_item.Id, 1, _size))
                 {
                     NetworkServer.Destroy(gameObject);
                 }

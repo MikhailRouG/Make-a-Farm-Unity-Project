@@ -14,10 +14,10 @@ TerrainLayer:
   m_TileOffset: {x: 0, y: 0}
   m_Specular: {r: 0.21204364, g: 0.46226418, b: 0, a: 0}
   m_Metallic: 0
-  m_Smoothness: 0
+  m_Smoothness: 0.2
   m_NormalScale: 1
   m_DiffuseRemapMin: {x: 0, y: 0, z: 0, w: 0}
-  m_DiffuseRemapMax: {x: 0, y: 0.4339623, z: 0.011187428, w: 1}
+  m_DiffuseRemapMax: {x: 0.058496986, y: 0.2735849, z: 0.052910283, w: 1}
   m_MaskMapRemapMin: {x: 0, y: 0, z: 0, w: 0}
-  m_MaskMapRemapMax: {x: 1, y: 1, z: 1, w: 1}
+  m_MaskMapRemapMax: {x: 1, y: 0, z: 1, w: 1}
   m_SmoothnessSource: 1

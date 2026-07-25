@@ -49,7 +49,7 @@ namespace Gameplay.Farm
         [Server]
         public void StartHarvesting(uint ownerId, int seed, float size)
         {
-            if (seed == 0)
+            if (seed < 0)
             {
                 Debug.LogWarning("[StandartHarvest] Seed is null.", this);
                 return;
@@ -129,7 +129,7 @@ namespace Gameplay.Farm
 
             int itemId = seed.HarvestItem[0].Id;
 
-            if (!inventory.TryAddItem(itemId, 1))
+            if (!inventory.TryAddItem(itemId, 1, _size))
             {
                 Debug.LogError("Error on Add");
                 return;

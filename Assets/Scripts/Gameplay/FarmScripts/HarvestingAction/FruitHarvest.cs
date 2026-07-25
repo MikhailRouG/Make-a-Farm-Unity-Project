@@ -8,65 +8,130 @@ namespace Gameplay.Farm
         [SerializeField] private Transform[] _fruitPoint;
         [SerializeField] private GameObject _fruitPrefab;
         [SerializeField] private int _fruitCount = 3;
+        private Vector3[] _fruitPointBaseOffset;
         private int _currentCount;
         private uint _ownerId;
-        private int _seedId;
+        private int _seedId = -1;
         private ItemSeed _seed;
+        private ItemDatabase _database;
+
+        [SyncVar(hook = nameof(OnSizeChanged))]
+        private float _size = 0f;
 
         public event System.Action OnDestroyedServer;
 
-        private void Awake()
+        private ItemSeed Seed
         {
-            if (_stem == null) return;
-            int childCount = _stem.childCount;
-            if (childCount > 0)
+            get
             {
-                _fruitPoint = new Transform[childCount];
-                for (int i = 0; i < childCount; i++)
-                {
-                    _fruitPoint[i] = _stem.GetChild(i);
-                }
-            }
-            else
-            {
-                _fruitPoint = new Transform[] { _stem };
+                if (_seed != null) return _seed;
+                if (_seedId < 0 || _database == null) return null;
+
+                _seed = _database.Get(_seedId) as ItemSeed;
+                return _seed;
             }
         }
+
+        private void Awake()
+        {
+            _database = ItemDatabase.Instance;
+
+            if (_stem != null && _stem.childCount > 0)
+            {
+                _fruitPoint = new Transform[_stem.childCount];
+                for (int i = 0; i < _stem.childCount; i++)
+                    _fruitPoint[i] = _stem.GetChild(i);
+            }
+            else if (_fruitPoint == null || _fruitPoint.Length == 0)
+            {
+                _fruitPoint = new Transform[] { _stem != null ? _stem : transform };
+            }
+
+            // Captured once, before any scaling, so spawn points can be
+            // re-projected for the plant's actual size at spawn time
+            // instead of relying on the (client-only) visual scale.
+            _fruitPointBaseOffset = new Vector3[_fruitPoint.Length];
+            for (int i = 0; i < _fruitPoint.Length; i++)
+                _fruitPointBaseOffset[i] = transform.InverseTransformPoint(_fruitPoint[i].position);
+        }
+
+        [Server]
         public void StartHarvesting(uint ownerId, int seed, float size)
         {
-            if (!isServer) return;
             _ownerId = ownerId;
             _seedId = seed;
+            _size = size;
+        }
+
+        public override void OnStartServer()
+        {
+            base.OnStartServer();
             SpawnFruits();
+        }
+
+        public override void OnStartClient()
+        {
+            base.OnStartClient();
+            InitializeVisual(_size);
+        }
+
+        private void OnSizeChanged(float oldSize, float newSize)
+        {
+            InitializeVisual(newSize);
+        }
+
+        [Client]
+        private void InitializeVisual(float size)
+        {
+            if (!isActiveAndEnabled) return;
+
+            if (TryGetComponent<AppearAnimation>(out var animation))
+                animation.Initialize(size);
         }
 
         [Server]
         private void SpawnFruits()
         {
-            _currentCount = _fruitCount;
+            ItemSeed seed = Seed;
+            if (seed == null || seed.HarvestItem == null || seed.HarvestItem.Length == 0)
+            {
+                Debug.LogWarning($"[FruitHarvest] Invalid seed data: {_seedId}", this);
+                DestroySelf();
+                return;
+            }
+            if (_fruitPrefab == null || _fruitPoint == null || _fruitPoint.Length == 0)
+            {
+                Debug.LogError("[FruitHarvest] Fruit prefab or spawn points not set.", this);
+                DestroySelf();
+                return;
+            }
+
+            ItemConfig harvestItem = seed.HarvestItem[0];
+            _currentCount = 0;
+
             for (int i = 0; i < _fruitCount; i++)
             {
                 float randomAngle = Random.Range(0f, 360f);
-                int randomPoint = Random.Range(0, _fruitPoint.Length);
-                Transform targetPoint = _fruitPoint[randomPoint];
+                int pointIndex = Random.Range(0, _fruitPoint.Length);
+                Vector3 targetPosition = transform.TransformPoint(_fruitPointBaseOffset[pointIndex] * _size);
+                Quaternion targetRotation = Quaternion.Euler(0f, randomAngle, 0f);
 
-                Quaternion targetRotation = Quaternion.Euler(0, randomAngle, 0);
-                GameObject fruitInstance = Instantiate(_fruitPrefab, targetPoint.position, targetRotation);
-                if (!fruitInstance.TryGetComponent<Fruit>(out Fruit fruitComponent))
+                GameObject fruitInstance = Instantiate(_fruitPrefab, targetPosition, targetRotation);
+                if (!fruitInstance.TryGetComponent(out Fruit fruitComponent))
                 {
-                    Debug.LogError("[FruitHarvest] Fruit == null", this);
+                    Debug.LogError("[FruitHarvest] Fruit component missing on prefab.", this);
                     Destroy(fruitInstance);
                     continue;
                 }
 
-                if (_seed != null && _seed.HarvestItem != null && _seed.HarvestItem.Length > 0)
-                {
-
-                    NetworkServer.Spawn(fruitInstance);
-                    fruitComponent.Init(_ownerId, _seed.HarvestItem[0]);
-                    fruitComponent.OnDestroyedServer += HandleFruitDestroyed;
-                }
+                fruitComponent.Init(_ownerId, harvestItem, _size);
+                fruitComponent.OnDestroyedServer += HandleFruitDestroyed;
+                NetworkServer.Spawn(fruitInstance);
+                _currentCount++;
             }
+
+            if (_currentCount <= 0)
+                DestroySelf();
         }
 
         [Server]
@@ -75,10 +140,14 @@ namespace Gameplay.Farm
             _currentCount--;
 
             if (_currentCount <= 0)
-            {
-                NetworkServer.Destroy(gameObject);
-                OnDestroyedServer?.Invoke();
-            }
+                DestroySelf();
+        }
+
+        [Server]
+        private void DestroySelf()
+        {
+            OnDestroyedServer?.Invoke();
+            NetworkServer.Destroy(gameObject);
         }
     }
 }
