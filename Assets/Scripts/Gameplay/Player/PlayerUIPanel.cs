@@ -9,10 +9,12 @@ namespace Gameplay.Player
         [SerializeField] private TextMeshProUGUI _moneyText;
         private PlayerInteraction _interaction;
         [SerializeField] private PlayerInventoryUI inventoryUI;
+        [SerializeField] private PauseMenuUi pauseMenu;
         public void Bind(
                Inventory inventory,
                PlayerInventory playerInventory,
-               PlayerInteraction interaction)
+               PlayerInteraction interaction,
+               Player player)
         {
             if (inventoryUI == null)
                 inventoryUI = GetComponentInChildren<PlayerInventoryUI>();
@@ -23,6 +25,11 @@ namespace Gameplay.Player
                 interaction.OnHasInteraction += SetInteractionText;
             }
             if (_moneyText != null) inventory.OnMoneyChanged += MoneyUpdate;
+
+            if (pauseMenu == null)
+                pauseMenu = GetComponentInChildren<PauseMenuUi>(true);
+            if (pauseMenu != null && player != null)
+                pauseMenu.Bind(player);
         }
 
         private void OnDestroy()

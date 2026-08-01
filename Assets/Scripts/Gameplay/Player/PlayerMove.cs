@@ -6,7 +6,7 @@ namespace Gameplay.Player
     [RequireComponent(typeof(CharacterController))]
     public class PlayerMove : NetworkBehaviour
     {
-        [SerializeField] private Transform cameraTransform;
+       private Transform cameraTransform;
         [Header("Movement Settings")]
         [SerializeField] private float speed = 5f;
         [SerializeField] private float shiftSpeed = 7f;
@@ -18,7 +18,7 @@ namespace Gameplay.Player
 
         private CharacterController controller;
         private Animator animator;
-        // Runtime
+
         private Vector3 moveInput;
         private Vector3 rotationAxis;
         private float yVelocity;
@@ -60,12 +60,6 @@ namespace Gameplay.Player
             float currentSpeed = isRunning ? shiftSpeed : speed;
             Vector3 velocity = moveInput * currentSpeed;
 
-            if (moveInput.sqrMagnitude > 0.01f)
-            {
-                Quaternion targetRot = Quaternion.LookRotation(moveInput, Vector3.up);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
-            }
-
             velocity.y = yVelocity;
             if (animator != null)
             {
@@ -92,5 +86,20 @@ namespace Gameplay.Player
             yVelocity += gravity * Time.deltaTime;
         }
 
+
+        public void RotationOnFirstPersonCamera()
+        {
+            Vector3 forward = cameraTransform.forward;
+            forward.y = 0;
+            transform.rotation = Quaternion.LookRotation(forward, Vector3.up);
+        }
+        public void RotationOnThirdPersonCamera()
+        {
+            if (moveInput.sqrMagnitude > 0.01f)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(moveInput, Vector3.up);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
+            }
+        }
     }
 }

@@ -15,8 +15,14 @@ namespace Gameplay.Player
         private bool jumpPressed;
         private bool interactPressed;
         private bool cursorTogglePressed;
+        private bool _inputEnabled = true;
         public event Action onUseItem;
         public event Action onEsc;
+
+        public void SetInputEnabled(bool enabled)
+        {
+            _inputEnabled = enabled;
+        }
         private void Awake()
         {
             input = new PlayerInputActions();
@@ -60,19 +66,9 @@ namespace Gameplay.Player
         private void Update()
         {
             if (!isLocalPlayer) return;
+            if (!_inputEnabled) return;
+            CursorHandle();
 
-            bool rightClick = input.Player.RightClick.IsPressed();
-
-            if (rightClick)
-            {
-                Cursor.visible = false;
-                interaction.InteractionByForward();
-            }
-            else
-            {
-                Cursor.visible = true;
-                interaction.InteractionByCursor();
-            }
             Vector2 moveDir = input.Player.Move.ReadValue<Vector2>();
             Vector2 lookDir = input.Player.Look.ReadValue<Vector2>();
             float zoom = input.Player.Zoom.ReadValue<float>();
@@ -81,8 +77,11 @@ namespace Gameplay.Player
             move.HandleMove(moveDir, isRunning);
             if (cameraController != null)
             {
-                if (Cursor.visible == false) cameraController.HandleCamera(lookDir, zoom);
-                else if (zoom != 0) cameraController.HandleCamera(Vector2.zero, zoom);
+                if (cameraController.FirstPerson) move.RotationOnFirstPersonCamera();
+                else move.RotationOnThirdPersonCamera();
+                if (Cursor.visible == false) cameraController.HandleRotate(lookDir);
+
+               if (zoom != 0) cameraController.HandleZoom(zoom);
             }
             move.HandleGravityAndJump(jumpPressed);
         }
@@ -90,12 +89,14 @@ namespace Gameplay.Player
         private void OnInteract(InputAction.CallbackContext ctx)
         {
             if (!ctx.performed) return;
+            if (!_inputEnabled) return;
             interaction.TryInteract();
         }
 
         private void OnUseItem(InputAction.CallbackContext ctx)
         {
             if (!ctx.performed) return;
+            if (!_inputEnabled) return;
             if (playerInventory == null) return;
             onUseItem?.Invoke();
         }
@@ -109,7 +110,25 @@ namespace Gameplay.Player
 
         private void OnPlant(InputAction.CallbackContext ctx)
         {
+            if (!_inputEnabled) return;
             if (_placement.enabled == true) _placement.ConfirmPlacement();
+        }
+
+        private void CursorHandle()
+        {
+            bool rightClick;
+            if (cameraController.FirstPerson) rightClick = true;
+            else rightClick = input.Player.RightClick.IsPressed();
+            if (rightClick)
+            {
+                Cursor.visible = false;
+                interaction.InteractionByForward();
+            }
+            else
+            {
+                Cursor.visible = true;
+                interaction.InteractionByCursor();
+            }
         }
     }
 }

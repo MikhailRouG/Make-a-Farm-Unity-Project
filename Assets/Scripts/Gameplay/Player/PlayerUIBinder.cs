@@ -53,8 +53,14 @@ namespace Gameplay.Player
                 Debug.LogError($"{nameof(PlayerUIBinder)}: PlayerInteraction not found.", this);
                 return;
             }
+
+            if (!TryGetComponent(out Player player))
+            {
+                Debug.LogError($"{nameof(PlayerUIBinder)}: Player not found.", this);
+                return;
+            }
             _uiInstance = Instantiate(_uiPrefab);
-            _uiInstance.Bind(inventory, playerInventory, interaction);
+            _uiInstance.Bind(inventory, playerInventory, interaction, player);
             return;
         }
 
