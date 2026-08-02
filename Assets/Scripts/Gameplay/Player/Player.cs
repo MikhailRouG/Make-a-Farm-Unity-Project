@@ -50,6 +50,7 @@ namespace Gameplay.Player
             input.Player.UseItem.performed += OnUseItem;
             input.Player.Escape.performed += OnEscape;
             input.Player.Plant.performed += OnPlant;
+            input.Player.CursorVisable.performed += OnChangeCursor;
         }
         private void OnDisable()
         {
@@ -59,6 +60,8 @@ namespace Gameplay.Player
                 input.Player.UseItem.performed -= OnUseItem;
                 input.Player.Escape.performed -= OnEscape;
                 input.Player.Plant.performed -= OnPlant;
+                input.Player.CursorVisable.performed -= OnChangeCursor;
+
                 input.Player.Disable();
             }
         }
@@ -98,26 +101,43 @@ namespace Gameplay.Player
             if (!ctx.performed) return;
             if (!_inputEnabled) return;
             if (playerInventory == null) return;
+            Cursor.visible = false;
             onUseItem?.Invoke();
         }
 
         private void OnEscape(InputAction.CallbackContext ctx)
         {
-            onEsc?.Invoke();
+            if (UiManager.Instance != null && UiManager.Instance.HasOpenUi)
+            {
+                UiManager.Instance.CloseTopUi();
+                return;
+            }
+
             playerInventory.OnEscape();
-            if (_placement.enabled == true) _placement.CancelPlacement();
+
+            if (_placement._isPlanting)
+            {
+                _placement.CancelPlacement();
+                return;
+            }
+
+            onEsc?.Invoke();
         }
 
         private void OnPlant(InputAction.CallbackContext ctx)
         {
             if (!_inputEnabled) return;
-            if (_placement.enabled == true) _placement.ConfirmPlacement();
+            if (_placement._isPlanting) _placement.ConfirmPlacement();
         }
 
         private void CursorHandle()
         {
             bool rightClick;
-            if (cameraController.FirstPerson) rightClick = true;
+            if (cameraController.FirstPerson)
+            {
+                interaction.InteractionByForward();
+                return;
+            }
             else rightClick = input.Player.RightClick.IsPressed();
             if (rightClick)
             {
@@ -129,6 +149,11 @@ namespace Gameplay.Player
                 Cursor.visible = true;
                 interaction.InteractionByCursor();
             }
+        }
+
+        private void OnChangeCursor(InputAction.CallbackContext ctx)
+        {
+            Cursor.visible = !Cursor.visible;
         }
     }
 }

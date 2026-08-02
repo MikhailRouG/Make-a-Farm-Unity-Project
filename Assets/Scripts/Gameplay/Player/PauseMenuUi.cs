@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace Gameplay.Player
 {
-    public class PauseMenuUi : MonoBehaviour
+    public class PauseMenuUi : MonoBehaviour, ICloseableUi
     {
         [SerializeField] private GameObject _panelRoot;
         [SerializeField] private Button _resumeButton;
@@ -22,6 +22,7 @@ namespace Gameplay.Player
 
             if (_panelRoot != null)
                 _panelRoot.SetActive(false);
+            _isOpen = false;
         }
 
         private void OnDestroy()
@@ -32,23 +33,20 @@ namespace Gameplay.Player
                 _exitButton.onClick.RemoveListener(ExitToMenu);
 
             if (_player != null)
-                _player.onEsc -= Toggle;
+                _player.onEsc -= Show;
         }
 
         public void Bind(Player player)
         {
             _player = player;
-            _player.onEsc += Toggle;
+            _player.onEsc += Show;
         }
 
-        private void Toggle()
-        {
-            if (_isOpen) Hide();
-            else Show();
-        }
+        public void Close() => Hide();
 
         private void Show()
         {
+            if (_isOpen) return;
             _isOpen = true;
 
             if (_panelRoot != null)
@@ -58,16 +56,19 @@ namespace Gameplay.Player
             Cursor.visible = true;
 
             _player?.SetInputEnabled(false);
+            UiManager.Instance?.Register(this);
         }
 
         private void Hide()
         {
+            if (!_isOpen) return;
             _isOpen = false;
 
             if (_panelRoot != null)
                 _panelRoot.SetActive(false);
 
             _player?.SetInputEnabled(true);
+            UiManager.Instance?.Unregister(this);
         }
 
         private void ExitToMenu()

@@ -17,7 +17,6 @@ namespace Gameplay.Player
         [SerializeField] private LayerMask interactableMask;
         [SerializeField] private bool interactByMouse;
 
-        private bool cursorStatus;
         private IInteractable currentTarget;
         [HideInInspector] public bool HasTarget;
         public Action<String> OnHasInteraction;
@@ -37,7 +36,7 @@ namespace Gameplay.Player
         public void InteractionByForward()
         {
             if (!isLocalPlayer || _playerCamera == null) return;
-            Ray ray = new Ray(rayOrigin.position, _playerCamera.transform.forward);
+            Ray ray = new Ray(_playerCamera.transform.position, _playerCamera.transform.forward);
             Interaction(ray);
         }
         public void InteractionByCursor()

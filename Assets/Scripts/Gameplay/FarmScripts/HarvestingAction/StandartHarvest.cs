@@ -92,19 +92,17 @@ namespace Gameplay.Farm
             if (identity == null)
                 return;
 
-            CmdCollect(identity);
+            ServerCollect(identity);
         }
 
-        [Command(requiresAuthority = false)]
-        private void CmdCollect(
-            NetworkIdentity interactorIdentity,
-            NetworkConnectionToClient sender = null)
+        // Interact() is only ever invoked server-side (StandartHarvest has a
+        // NetworkIdentity, so PlayerInteraction routes it through
+        // CmdExecuteInteraction). Authority over the interacting player was
+        // already verified there — no need for a second network hop / re-check.
+        [Server]
+        private void ServerCollect(NetworkIdentity interactorIdentity)
         {
-            if ( interactorIdentity == null)
-                return;
-
-            // Protection against the transfer of another party's object.
-            if (sender == null || sender.identity != interactorIdentity)
+            if (interactorIdentity == null)
                 return;
 
             ItemSeed seed = Seed;

@@ -47,8 +47,10 @@ namespace Gameplay.Player
             yRotation += mouseX;
 
             if (_cameraTarget != null)
+            {
+                if (_firstPerson && Cursor.visible == true) return; 
                 _cameraTrackTransform.localRotation = Quaternion.Euler(xRotation, yRotation, 0f);
-
+            }
         }
         public void HandleZoom(float zoom)
         {
@@ -79,6 +81,7 @@ namespace Gameplay.Player
                 model.SetActive(!firstCamera);
             _firstPerson = firstCamera;
             _cameraRig.SetFirstPerson(firstCamera);
+            Cursor.visible = !firstCamera;
         }
         private static float NormalizeAngle(float angle)
         {

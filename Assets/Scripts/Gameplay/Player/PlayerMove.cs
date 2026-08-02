@@ -49,7 +49,6 @@ namespace Gameplay.Player
             if (!isLocalPlayer || !controller.enabled || cameraTransform == null) return;
             if (!controller.enabled) return;
             Vector2 input = direction;
-
             Vector3 forward = cameraTransform.forward;
             Vector3 right = cameraTransform.right;
             forward.y = 0;

@@ -430,7 +430,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  _uiPrefab: {fileID: 2298581623638044266, guid: a0912b37188a6a948b542bd4648832c0, type: 3}
+  _uiPrefab: {fileID: 8324042556372735319, guid: 6bd802c8db931ba43b0fa83af0a561dd, type: 3}
 --- !u!114 &5527747375020119178
 MonoBehaviour:
   m_ObjectHideFlags: 0

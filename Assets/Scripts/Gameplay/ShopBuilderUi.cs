@@ -3,7 +3,7 @@ using UnityEngine;
 using Zenject;
 namespace Gameplay.Player.UI.Shop
 { 
-    public class ShopBuilderUi : MonoBehaviour
+    public class ShopBuilderUi : MonoBehaviour, ICloseableUi
     {
         private PlayerShopServer _playerShopServer;
         private ItemDatabase _database;
@@ -31,17 +31,22 @@ namespace Gameplay.Player.UI.Shop
         }
         public void OpenShop(PlayerShopServer buyer)
         {
+            Cursor.visible = true;
             _playerShopServer = buyer;
             gameObject.SetActive(true);
             ShowCategory(_defaultCategory);
+            UiManager.Instance?.Register(this);
         }
         public void CloseShop()
         {
+            Cursor.visible = false;
             ClearShop();
             _playerShopServer = null;
             gameObject.SetActive(false);
             SelectTab(_defaultCategory);
+            UiManager.Instance?.Unregister(this);
         }
+        public void Close() => CloseShop();
         private void SelectTab(ShopCategory category)
         {
             foreach (var tab in _tabs)
