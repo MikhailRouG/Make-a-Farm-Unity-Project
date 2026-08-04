@@ -58,10 +58,14 @@ public class PlayerShopServer : NetworkBehaviour
                 UnityEngine.Debug.LogError("[SERVER] Error Buy:  Inventory didnt found!");
                 return;
             }
+            if (!_inventory.TryGetItemSize(itemId, out float size))
+                return;
+
             if (_inventory.TryRemoveItem(itemId))
             {
                 ItemConfig item = _database.Get(itemId);
-                _inventory.TryAddMoney(item.Price);
+                int payout = UnityEngine.Mathf.RoundToInt(item.Price * size);
+                _inventory.TryAddMoney(payout);
             }
         }
     }

@@ -836,7 +836,7 @@ RectTransform:
   m_GameObject: {fileID: 6287809272658649692}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1108385046281891394}
@@ -1117,7 +1117,10 @@ MonoBehaviour:
 
     Use item - [E]
 
-    Plant - [Left Mouse Button]'
+    Plant - [Left Mouse Button]
+
+    Cursor
+    [Y]'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b453500cef0fe0242808e5a59256a5fc, type: 2}
   m_sharedMaterial: {fileID: -7851486165507338212, guid: b453500cef0fe0242808e5a59256a5fc, type: 2}

@@ -119,6 +119,24 @@ public class Inventory : NetworkBehaviour
     }
 
     [Server]
+    public bool TryGetItemSize(int itemId, out float size)
+    {
+        for (int i = 0; i < Slots.Count; i++)
+        {
+            InventorySlot slot = Slots[i];
+
+            if (slot.IsEmpty || slot.ItemId != itemId)
+                continue;
+
+            size = slot.Size;
+            return true;
+        }
+
+        size = 0f;
+        return false;
+    }
+
+    [Server]
     public bool HasItem(int itemId, int amount = 1)
     {
         if (amount <= 0)
