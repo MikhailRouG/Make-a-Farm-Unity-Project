@@ -12,11 +12,11 @@ namespace Gameplay.Farm
         [SyncVar(hook = nameof(OnSizeChanged))]
         private float _size = 1f;
 
-        private Plant _parent;
         private ItemConfig _item;
         private Vector3 _baseScale;
-        public event Action OnDestroyedServer;
+
         public string InteractionPrompt => "Collect the plant";
+        public event Action OnDestroyedServer;
 
         private void Awake()
         {
@@ -28,6 +28,7 @@ namespace Gameplay.Farm
             base.OnStartClient();
             InitializeVisual(_size);
         }
+
         [Server]
         public void Init(uint ownerId, ItemConfig item, float size)
         {
@@ -46,7 +47,7 @@ namespace Gameplay.Farm
         {
             if (!isActiveAndEnabled) return;
 
-            if (TryGetComponent<AppearAnimation>(out var animation))
+            if (TryGetComponent(out AppearAnimation animation))
                 animation.Initialize(size);
             else
                 transform.localScale = _baseScale * size;
@@ -57,11 +58,11 @@ namespace Gameplay.Farm
         {
             if (_item == null)
             {
-                Debug.Log("Item == null", this);
+                Debug.LogError($"[Fruit] {name}: item is not assigned.", this);
                 return;
             }
 
-            if (interactor.TryGetComponent<Inventory>(out Inventory inventory))
+            if (interactor.TryGetComponent(out Inventory inventory))
             {
                 if (inventory.TryAddItem(_item.Id, 1, _size))
                 {
@@ -69,6 +70,7 @@ namespace Gameplay.Farm
                 }
             }
         }
+
         public override void OnStopServer()
         {
             OnDestroyedServer?.Invoke();

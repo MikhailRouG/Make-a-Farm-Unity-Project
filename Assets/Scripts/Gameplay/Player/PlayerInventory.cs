@@ -1,5 +1,5 @@
-using Mirror;
 using System;
+using Mirror;
 using UnityEngine;
 
 namespace Gameplay.Player
@@ -7,12 +7,13 @@ namespace Gameplay.Player
     [RequireComponent(typeof(Inventory))]
     public class PlayerInventory : NetworkBehaviour
     {
+        [SyncVar(hook = nameof(OnSelectedSlotChanged))]
+        private int _selectedSlotIndex;
+
         private Inventory _inventory;
         private Player _player;
         private ItemDatabase _database;
 
-        [SyncVar(hook = nameof(OnSelectedSlotChanged))]
-        private int _selectedSlotIndex;
         public int SelectedSlotIndex => _selectedSlotIndex;
         public event Action<int> OnSelectedSlotChangedEvent;
 
@@ -21,40 +22,45 @@ namespace Gameplay.Player
             _database = ItemDatabase.Instance;
             _inventory = GetComponent<Inventory>();
             _player = GetComponent<Player>();
-            _player.onUseItem += CmdUseSelectedItem;
+
+            if (_player != null)
+                _player.onUseItem += CmdUseSelectedItem;
         }
+
+        private void OnDestroy()
+        {
+            if (_player != null)
+                _player.onUseItem -= CmdUseSelectedItem;
+        }
+
         private void OnSelectedSlotChanged(int oldIndex, int newIndex)
         {
             OnSelectedSlotChangedEvent?.Invoke(newIndex);
         }
+
         [Command]
         public void CmdSelectSlot(int slotIndex)
         {
             _selectedSlotIndex = slotIndex;
         }
+
         [Command]
         public void CmdUseSelectedItem()
         {
             InventorySlot slot = _inventory.GetSlotServer(_selectedSlotIndex);
+
             if (slot.IsEmpty)
                 return;
-            ItemConfig item = _database.Get(slot.ItemId);
+
+            ItemConfig item = _database != null ? _database.Get(slot.ItemId) : null;
 
             if (item == null)
                 return;
 
-            NetworkIdentity owner = netIdentity;
-
-            bool usedSuccessfully = item.UseServer(owner, slot);
-
-            if (!usedSuccessfully)
-                return;
-
-            if (item.ConsumeOnUse)
-            {
+            if (item.UseServer(netIdentity, slot))
                 _inventory.RemoveItemFromSlot(_selectedSlotIndex, 1);
-            }
         }
+
         [Command]
         public void CmdDropSelectedItem()
         {
@@ -63,13 +69,9 @@ namespace Gameplay.Player
             if (slot.IsEmpty)
                 return;
 
-            ItemConfig item = _database.Get(slot.ItemId);
-
-            if (item == null)
-                return;
-
             _inventory.RemoveItemFromSlot(_selectedSlotIndex, 1);
         }
+
         public void OnEscape()
         {
             CmdSelectSlot(-1);

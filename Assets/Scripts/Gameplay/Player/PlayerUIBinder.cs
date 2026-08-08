@@ -1,5 +1,6 @@
-using UnityEngine;
 using Mirror;
+using UnityEngine;
+
 namespace Gameplay.Player
 {
     public class PlayerUIBinder : NetworkBehaviour
@@ -7,10 +8,8 @@ namespace Gameplay.Player
         [Header("UI")]
         [SerializeField] private PlayerUIPanel _uiPrefab;
 
-        private Inventory _inventory;
-        private PlayerInteraction _interaction;
-
         private PlayerUIPanel _uiInstance;
+
         public override void OnStartLocalPlayer()
         {
             base.OnStartLocalPlayer();
@@ -61,7 +60,6 @@ namespace Gameplay.Player
             }
             _uiInstance = Instantiate(_uiPrefab);
             _uiInstance.Bind(inventory, playerInventory, interaction, player);
-            return;
         }
 
         private void DestroyUI()

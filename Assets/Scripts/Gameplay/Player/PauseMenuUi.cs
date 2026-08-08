@@ -73,8 +73,15 @@ namespace Gameplay.Player
 
         private void ExitToMenu()
         {
-            if (NetworkManager.singleton != null)
+            if (NetworkManager.singleton == null)
+                return;
+
+            if (NetworkServer.active && NetworkClient.isConnected)
                 NetworkManager.singleton.StopHost();
+            else if (NetworkClient.active)
+                NetworkManager.singleton.StopClient();
+            else if (NetworkServer.active)
+                NetworkManager.singleton.StopServer();
         }
     }
 }

@@ -12,8 +12,16 @@ public class UiManager : MonoBehaviour
 
     private readonly List<ICloseableUi> _openUi = new();
 
+    public bool HasOpenUi => _openUi.Count > 0;
+
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         Instance = this;
     }
 
@@ -23,15 +31,13 @@ public class UiManager : MonoBehaviour
             Instance = null;
     }
 
-    public bool HasOpenUi => _openUi.Count > 0;
-
     public void Register(ICloseableUi ui)
     {
-        if (!_openUi.Contains(ui))
-        {
-            _openUi.Add(ui);
-            Cursor.visible = true;
-        }
+        if (ui == null || _openUi.Contains(ui))
+            return;
+
+        _openUi.Add(ui);
+        Cursor.visible = true;
     }
 
     public void Unregister(ICloseableUi ui)
@@ -42,6 +48,14 @@ public class UiManager : MonoBehaviour
     public void CloseTopUi()
     {
         if (_openUi.Count == 0) return;
-        _openUi[_openUi.Count - 1].Close();
+
+        ICloseableUi top = _openUi[_openUi.Count - 1];
+
+        // Close() usually calls Unregister itself, but drop the entry here for the
+        // implementations that do not, or the list would stay stuck forever.
+        top.Close();
+
+        if (_openUi.Count > 0 && _openUi[_openUi.Count - 1] == top)
+            _openUi.RemoveAt(_openUi.Count - 1);
     }
 }

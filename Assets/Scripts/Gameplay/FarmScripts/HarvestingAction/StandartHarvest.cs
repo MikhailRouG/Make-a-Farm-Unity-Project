@@ -13,8 +13,7 @@ namespace Gameplay.Farm
         private int _seedId = -1;
 
         [SyncVar(hook = nameof(OnSizeChanged))]
-        private float _size = 0;
-
+        private float _size = 0f;
 
         private ItemSeed _seed;
         private ItemDatabase _database;
@@ -41,17 +40,18 @@ namespace Gameplay.Farm
         {
             _database = ItemDatabase.Instance;
         }
+
         private void OnSizeChanged(float oldSize, float newSize)
-{
-    InitializeVisual(newSize);
-}
-     
+        {
+            InitializeVisual(newSize);
+        }
+
         [Server]
         public void StartHarvesting(uint ownerId, int seed, float size)
         {
             if (seed < 0)
             {
-                Debug.LogWarning("[StandartHarvest] Seed is null.", this);
+                Debug.LogWarning($"[StandartHarvest] Invalid seed id: {seed}.", this);
                 return;
             }
 
@@ -65,20 +65,17 @@ namespace Gameplay.Farm
         {
             base.OnStartClient();
 
-                InitializeVisual(_size);
+            InitializeVisual(_size);
         }
+
         [Client]
         private void InitializeVisual(float size)
         {
             if (!isActiveAndEnabled)
                 return;
 
-            AppearAnimation animation =
-                GetComponent<AppearAnimation>();
-
-            if (animation == null)
-                return;
-            animation.Initialize(size);
+            if (TryGetComponent(out AppearAnimation animation))
+                animation.Initialize(size);
         }
 
         public void Interact(GameObject interactor)
@@ -86,10 +83,7 @@ namespace Gameplay.Farm
             if (interactor == null)
                 return;
 
-            NetworkIdentity identity =
-                interactor.GetComponent<NetworkIdentity>();
-
-            if (identity == null)
+            if (!interactor.TryGetComponent(out NetworkIdentity identity))
                 return;
 
             ServerCollect(identity);
@@ -107,31 +101,25 @@ namespace Gameplay.Farm
 
             ItemSeed seed = Seed;
 
-            if (seed == null ||
-                seed.HarvestItem == null ||
-                seed.HarvestItem.Length == 0)
+            if (seed == null || seed.HarvestItem == null || seed.HarvestItem.Length == 0)
             {
-                Debug.LogWarning(
-                    $"[StandartHarvest] Invalid seed data: {_seedId}",
-                    this
-                );
-
+                Debug.LogWarning($"[StandartHarvest] Invalid seed data: {_seedId}", this);
                 return;
             }
 
-            if (!interactorIdentity.TryGetComponent(
-                    out Inventory inventory))
+            if (seed.HarvestItem[0] == null)
             {
+                Debug.LogError($"[StandartHarvest] {seed.name}: harvest item is not assigned.", this);
                 return;
             }
 
-            int itemId = seed.HarvestItem[0].Id;
-
-            if (!inventory.TryAddItem(itemId, 1, _size))
-            {
-                Debug.LogError("Error on Add");
+            if (!interactorIdentity.TryGetComponent(out Inventory inventory))
                 return;
-            }
+
+            // On a full inventory the harvest stays in the world so it can be
+            // collected later, instead of being destroyed for nothing.
+            if (!inventory.TryAddItem(seed.HarvestItem[0].Id, 1, _size))
+                return;
 
             OnDestroyedServer?.Invoke();
             NetworkServer.Destroy(gameObject);

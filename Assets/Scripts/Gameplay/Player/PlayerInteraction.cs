@@ -1,6 +1,5 @@
-﻿using Mirror;
-using Mirror.Examples.Common;
 using System;
+using Mirror;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -8,59 +7,69 @@ namespace Gameplay.Player
 {
     public class PlayerInteraction : NetworkBehaviour
     {
+        private const float DistanceTolerance = 1.5f;
+
         [Header("References")]
-        private Camera _playerCamera;
-        [SerializeField] private Transform rayOrigin;
+        [SerializeField] private Transform _rayOrigin;
 
         [Header("Settings")]
-        [SerializeField] private float interactDistance = 3f;
-        [SerializeField] private LayerMask interactableMask;
-        [SerializeField] private bool interactByMouse;
+        [SerializeField] private float _interactDistance = 3f;
+        [SerializeField] private LayerMask _interactableMask;
 
-        private IInteractable currentTarget;
-        [HideInInspector] public bool HasTarget;
-        public Action<String> OnHasInteraction;
+        private Camera _playerCamera;
+        private IInteractable _currentTarget;
+
+        public bool HasTarget { get; private set; }
         public Vector3 LookPoint { get; private set; }
+
+        public event Action<string> OnHasInteraction;
 
         public override void OnStartLocalPlayer()
         {
             base.OnStartLocalPlayer();
+
             if (_playerCamera == null)
-            {
                 _playerCamera = FindAnyObjectByType<Camera>();
-            }
-            if (rayOrigin == null)
-                rayOrigin = transform;
+
+            if (_rayOrigin == null)
+                _rayOrigin = transform;
         }
 
         public void InteractionByForward()
         {
             if (!isLocalPlayer || _playerCamera == null) return;
+
             Ray ray = new Ray(_playerCamera.transform.position, _playerCamera.transform.forward);
             Interaction(ray);
         }
+
         public void InteractionByCursor()
         {
             if (!isLocalPlayer || _playerCamera == null) return;
+
             Ray ray = _playerCamera.ScreenPointToRay(Input.mousePosition);
             Interaction(ray);
         }
+
         public void Interaction(Ray ray)
         {
             if (CheckMouseOnUi()) return;
-            Debug.DrawRay(ray.origin, ray.direction * interactDistance, Color.green);
-            if (Physics.Raycast(ray, out RaycastHit hit, interactDistance))
+
+            Debug.DrawRay(ray.origin, ray.direction * _interactDistance, Color.green);
+
+            if (Physics.Raycast(ray, out RaycastHit hit, _interactDistance, _interactableMask))
             {
                 LookPoint = hit.point;
 
-                if (hit.collider.TryGetComponent<IInteractable>(out IInteractable component))
+                if (hit.collider.TryGetComponent(out IInteractable component))
                 {
-                    if (currentTarget != component)
+                    if (_currentTarget != component)
                     {
-                        currentTarget = component;
+                        _currentTarget = component;
                         HasTarget = true;
-                        OnHasInteraction?.Invoke(currentTarget.InteractionPrompt);
+                        OnHasInteraction?.Invoke(_currentTarget.InteractionPrompt);
                     }
+
                     return;
                 }
             }
@@ -68,48 +77,51 @@ namespace Gameplay.Player
             ClearTarget();
         }
 
+        public void TryInteract()
+        {
+            if (!isLocalPlayer || _currentTarget == null) return;
+
+            if (_currentTarget is UnityEngine.Object unityObj && unityObj == null)
+            {
+                _currentTarget = null;
+                return;
+            }
+
+            if (_currentTarget is Component component)
+            {
+                if (component.TryGetComponent(out NetworkIdentity identity))
+                    CmdExecuteInteraction(identity);
+                else
+                    _currentTarget.Interact(gameObject);
+            }
+
+            _currentTarget = null;
+        }
+
+        // The target comes from the client, so the distance is re-checked here.
+        // The tolerance absorbs the position drift between client and server.
+        [Command]
+        private void CmdExecuteInteraction(NetworkIdentity targetIdentity)
+        {
+            if (targetIdentity == null)
+                return;
+
+            float distance = Vector3.Distance(transform.position, targetIdentity.transform.position);
+
+            if (distance > _interactDistance * DistanceTolerance)
+                return;
+
+            if (targetIdentity.TryGetComponent(out IInteractable serverTarget))
+                serverTarget.Interact(gameObject);
+        }
+
         private void ClearTarget()
         {
             if (HasTarget)
                 OnHasInteraction?.Invoke(string.Empty);
 
-            currentTarget = null;
+            _currentTarget = null;
             HasTarget = false;
-        }
-
-        public void TryInteract()
-        {
-            if (!isLocalPlayer || currentTarget == null) return;
-            if (currentTarget is UnityEngine.Object unityObj && unityObj == null)
-            {
-                currentTarget = null;
-                return;
-            }
-
-            if (currentTarget is Component component)
-            {
-                if (component.TryGetComponent<NetworkIdentity>(out NetworkIdentity identity))
-                {
-                    CmdExecuteInteraction(identity);
-                }
-                else
-                {
-                    currentTarget.Interact(gameObject);
-                }
-            }
-
-            currentTarget = null;
-        }
-
-        [Command]
-        private void CmdExecuteInteraction(NetworkIdentity targetIdentity)
-        {
-            float distance = Vector3.Distance(transform.position, targetIdentity.transform.position);
-
-            if (targetIdentity.TryGetComponent<IInteractable>(out IInteractable serverTarget))
-            {
-                serverTarget.Interact(gameObject);
-            }
         }
 
         private bool CheckMouseOnUi()
@@ -119,6 +131,7 @@ namespace Gameplay.Player
                 ClearTarget();
                 return true;
             }
+
             return false;
         }
     }

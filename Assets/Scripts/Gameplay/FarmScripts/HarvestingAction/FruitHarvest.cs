@@ -1,5 +1,7 @@
-using UnityEngine;
+using System;
 using Mirror;
+using UnityEngine;
+
 namespace Gameplay.Farm
 {
     public class FruitHarvest : NetworkBehaviour, IHarvestable
@@ -18,7 +20,7 @@ namespace Gameplay.Farm
         [SyncVar(hook = nameof(OnSizeChanged))]
         private float _size = 0f;
 
-        public event System.Action OnDestroyedServer;
+        public event Action OnDestroyedServer;
 
         private ItemSeed Seed
         {
@@ -107,12 +109,20 @@ namespace Gameplay.Farm
             }
 
             ItemConfig harvestItem = seed.HarvestItem[0];
+
+            if (harvestItem == null)
+            {
+                Debug.LogError($"[FruitHarvest] {seed.name}: harvest item is not assigned.", this);
+                DestroySelf();
+                return;
+            }
+
             _currentCount = 0;
 
             for (int i = 0; i < _fruitCount; i++)
             {
-                float randomAngle = Random.Range(0f, 360f);
-                int pointIndex = Random.Range(0, _fruitPoint.Length);
+                float randomAngle = UnityEngine.Random.Range(0f, 360f);
+                int pointIndex = UnityEngine.Random.Range(0, _fruitPoint.Length);
                 Vector3 targetPosition = transform.TransformPoint(_fruitPointBaseOffset[pointIndex] * _size);
                 Quaternion targetRotation = Quaternion.Euler(0f, randomAngle, 0f);
 

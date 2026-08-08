@@ -1,4 +1,3 @@
-using Mirror;
 using System;
 using TMPro;
 using UnityEngine;
@@ -14,7 +13,9 @@ public class ShopCardUi : MonoBehaviour
     [SerializeField] private TMP_Text _rarityText;
     [SerializeField] private TMP_Text _buyPriceText;
     [SerializeField] private TMP_Text _sellPriceText;
+
     private ItemConfig _item;
+
     public event Action<int> OnBuyClick;
     public event Action<int> OnSellClick;
 
@@ -33,19 +34,16 @@ public class ShopCardUi : MonoBehaviour
         if (_sellButton != null)
             _sellButton.onClick.RemoveListener(OnSellClicked);
     }
+
     public void Build(ItemConfig item)
     {
-        if (item == null || _buyButton == null)
+        if (item == null || _buyButton == null || _image == null)
         {
             gameObject.SetActive(false);
             return;
         }
+
         _item = item;
-        if (_image == null)
-            {
-            gameObject.SetActive(false);
-            return;
-            }
         _image.sprite = _item.Icon;
 
         if (_nameText != null)
@@ -65,13 +63,17 @@ public class ShopCardUi : MonoBehaviour
     {
         if (_item == null)
             return;
+
         OnBuyClick?.Invoke(_item.Id);
     }
+
     private void OnSellClicked()
     {
         if (_item == null)
             return;
+
         OnSellClick?.Invoke(_item.Id);
     }
+
     public class Factory : PlaceholderFactory<ShopCardUi> { }
 }

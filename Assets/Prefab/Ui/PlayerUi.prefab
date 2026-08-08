@@ -48,8 +48,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Player.PlayerUIPanel
   _interactionText: {fileID: 6453418002102092502}
   _moneyText: {fileID: 2284470945941937770}
-  inventoryUI: {fileID: 6231622425412203319}
-  pauseMenu: {fileID: 8504304474193598307}
+  _inventoryUI: {fileID: 6231622425412203319}
+  _pauseMenu: {fileID: 8504304474193598307}
 --- !u!1001 &3050271958240241545
 PrefabInstance:
   m_ObjectHideFlags: 0

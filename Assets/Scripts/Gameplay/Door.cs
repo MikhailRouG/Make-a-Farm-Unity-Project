@@ -1,27 +1,34 @@
-using UnityEngine;
 using Mirror;
+using UnityEngine;
+
 public class Door : NetworkBehaviour, IInteractable
 {
-    
+    [SerializeField] private Transform _door;
+
     [SyncVar(hook = nameof(OnOpenChanged))]
-    private bool isOpen;
-    [SerializeField] private Transform door;
-    private BoxCollider boxCollider;
-    public string InteractionPrompt => isOpen ? "close the door" : "open the door";
+    private bool _isOpen;
+
+    private BoxCollider _boxCollider;
+
+    public string InteractionPrompt => _isOpen ? "close the door" : "open the door";
 
     private void Awake()
     {
-        boxCollider = GetComponent<BoxCollider>();
+        _boxCollider = GetComponent<BoxCollider>();
     }
+
     [Server]
     public void Interact(GameObject interactor)
     {
-        isOpen = !isOpen;
+        _isOpen = !_isOpen;
     }
 
     private void OnOpenChanged(bool oldValue, bool newValue)
     {
-        door.localRotation = Quaternion.Euler(0, newValue ? -130 : 0, 0);
-        boxCollider.isTrigger = newValue;
+        if (_door != null)
+            _door.localRotation = Quaternion.Euler(0f, newValue ? -130f : 0f, 0f);
+
+        if (_boxCollider != null)
+            _boxCollider.isTrigger = newValue;
     }
 }

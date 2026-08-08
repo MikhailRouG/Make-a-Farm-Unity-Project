@@ -267,9 +267,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _iconImage: {fileID: 3800056444673166563}
   _amountText: {fileID: 8976537178511124793}
-  _slot:
-    ItemId: 0
-    Amount: 0
 --- !u!114 &6470295098727925834
 MonoBehaviour:
   m_ObjectHideFlags: 0

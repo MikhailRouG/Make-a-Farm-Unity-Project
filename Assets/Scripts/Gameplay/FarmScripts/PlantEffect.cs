@@ -9,10 +9,11 @@ namespace Gameplay.Farm
         private Plant _plant;
         private Coroutine _startPlayCoroutine;
 
-        public void Awake()
+        private void Awake()
         {
             _plant = GetComponent<Plant>();
         }
+
         private void OnEnable()
         {
             if (_plant == null) return;
@@ -28,10 +29,12 @@ namespace Gameplay.Farm
             _plant.OnInitialized -= Init;
             _plant.OnUpdateStage -= PlayLocal;
         }
-        private void Init(float size ,EffectConfig effect)
+
+        private void Init(float size, EffectConfig effect)
         {
             _config = effect;
         }
+
         private void PlayLocal(EffectState state, string text)
         {
             if (_config == null) return;
@@ -51,6 +54,7 @@ namespace Gameplay.Farm
 
             Destroy(instance, effect.Lifetime);
         }
+
         private void StartPlay(EffectEntry effect)
         {
             if (_startPlayCoroutine != null)
@@ -58,6 +62,7 @@ namespace Gameplay.Farm
 
             _startPlayCoroutine = StartCoroutine(StartPlayRoutine(effect));
         }
+
         private IEnumerator StartPlayRoutine(EffectEntry effect)
         {
             if (effect == null || effect.Prefab == null)
@@ -80,6 +85,7 @@ namespace Gameplay.Farm
 
             _startPlayCoroutine = null;
         }
+
         private void SetChildrenActive(bool value)
         {
             for (int i = 0; i < transform.childCount; i++)
@@ -87,6 +93,7 @@ namespace Gameplay.Farm
                 transform.GetChild(i).gameObject.SetActive(value);
             }
         }
+
         private void OnDestroy()
         {
             if (gameObject.scene.isLoaded)

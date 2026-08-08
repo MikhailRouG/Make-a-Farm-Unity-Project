@@ -77,7 +77,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  _data: {fileID: 0}
+  _data: {fileID: 11400000, guid: d9b23277d4e662a49ad06a92a8c7f5e1, type: 2}
 --- !u!114 &-3020414820885226214
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -13,9 +13,7 @@ namespace Gameplay.Farm
         Grow,
         Harvest
     }
-}
-namespace Gameplay.Farm
-{
+
     [Serializable]
     public class EffectEntry
     {

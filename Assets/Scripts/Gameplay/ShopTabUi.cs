@@ -1,5 +1,4 @@
 using System;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,12 +7,12 @@ namespace Gameplay.Player.UI.Shop
     [RequireComponent(typeof(Toggle))]
     public class ShopTabUi : MonoBehaviour
     {
-        [SerializeField] private ShopCategory _category;
+        [SerializeField] private ItemType _category;
 
         private Toggle _toggle;
 
-        public ShopCategory Category => _category;
-        public event Action<ShopCategory> OnSelected;
+        public ItemType Category => _category;
+        public event Action<ItemType> OnSelected;
 
         private void Awake()
         {
@@ -29,18 +28,13 @@ namespace Gameplay.Player.UI.Shop
 
         public void SetSelectedSilently(bool isOn)
         {
-            _toggle.SetIsOnWithoutNotify(isOn);
-            UpdateVisual(isOn);
+            if (_toggle != null)
+                _toggle.SetIsOnWithoutNotify(isOn);
         }
 
         private void OnValueChanged(bool isOn)
         {
-            UpdateVisual(isOn);
             if (isOn) OnSelected?.Invoke(_category);
-        }
-
-        private void UpdateVisual(bool isOn)
-        {
         }
     }
 }

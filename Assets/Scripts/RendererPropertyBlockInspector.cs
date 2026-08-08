@@ -1,14 +1,14 @@
 using UnityEngine;
+
 [ExecuteAlways]
 public class RendererPropertyBlockInspector : MonoBehaviour
 {
+    private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
     [SerializeField] private Renderer targetRenderer;
     [SerializeField] private Color baseColor = Color.white;
 
     private MaterialPropertyBlock block;
-
-    private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
     private void OnEnable()
     {

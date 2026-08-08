@@ -5,24 +5,32 @@ namespace Gameplay.Farm
 {
     public class TakeItem : NetworkBehaviour, IInteractable
     {
-        private uint _ownerNetId;
         [SerializeField] private ItemConfig _data;
-        private Plant _plant;
-        public string InteractionPrompt => _data != null ? _data.name : "";
 
+        public string InteractionPrompt => _data != null ? _data.Name : string.Empty;
 
-        public void Init(uint ownerNetId, ItemConfig data, Plant plant)
+        [Server]
+        public void Init(ItemConfig data)
         {
-            _ownerNetId = ownerNetId;
             _data = data;
-            _plant = plant;
         }
+
         [Server]
         public void Interact(GameObject interactor)
         {
-            Debug.Log("item");
-            interactor.GetComponent<Inventory>().TryAddItem(_data.Id, 1);
-            NetworkServer.Destroy(gameObject);
+            if (_data == null)
+            {
+                Debug.LogError($"[TakeItem] {name}: item is not assigned.", this);
+                return;
+            }
+
+            if (!interactor.TryGetComponent(out Inventory inventory))
+                return;
+
+            // Destroyed only after a successful hand-over: on a full inventory the
+            // item must stay in the world instead of vanishing for nothing.
+            if (inventory.TryAddItem(_data.Id, 1))
+                NetworkServer.Destroy(gameObject);
         }
     }
 }

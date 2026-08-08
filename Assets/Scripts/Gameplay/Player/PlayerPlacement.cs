@@ -1,49 +1,39 @@
+using Gameplay.Farm;
 using Mirror;
 using UnityEngine;
-using Gameplay.Farm;
 
 namespace Gameplay.Player
 {
     public class PlayerPlacement : NetworkBehaviour
     {
-        [SerializeField] private ItemDatabase db;
-        private PlayerInteraction interaction;
-        private PlayerInventory _player;
+        private ItemDatabase _database;
+        private PlayerInteraction _interaction;
         private Inventory _inventory;
 
-        private int currentSeedId = -1;
         private ItemSeed _currentSeed;
-        private PlantCheckPosition currentGhost;
+        private PlantCheckPosition _currentGhost;
         private bool _canPlant;
-        public bool _isPlanting { get; private set; }
+
+        public bool IsPlanting { get; private set; }
 
         private void Awake()
         {
-            interaction = GetComponent<PlayerInteraction>();
+            _database = ItemDatabase.Instance;
+            _interaction = GetComponent<PlayerInteraction>();
             _inventory = GetComponent<Inventory>();
-            _player = GetComponent<PlayerInventory>();
-            _isPlanting = false;
+            IsPlanting = false;
             _canPlant = false;
-        }
-
-        private void OnEnable()
-        {
-            _player.OnSelectedSlotChangedEvent += OnChangedSlot;
-        }
-        private void OnDisable()
-        {
-            _player.OnSelectedSlotChangedEvent -= OnChangedSlot;
         }
 
         private void Update()
         {
-            if (!isLocalPlayer || !_isPlanting) return;
-            if (currentGhost != null)
-            {
-                currentGhost.transform.position = interaction.LookPoint;
-                _canPlant = currentGhost.CheckZone();
-            }
+            if (!isLocalPlayer || !IsPlanting) return;
+            if (_currentGhost == null || _interaction == null) return;
+
+            _currentGhost.transform.position = _interaction.LookPoint;
+            _canPlant = _currentGhost.CheckZone();
         }
+
         [TargetRpc]
         public void TargetStartPlanting(NetworkConnection target, int seedId)
         {
@@ -54,25 +44,27 @@ namespace Gameplay.Player
         {
             if (!isLocalPlayer) return;
 
-            var config = db.Get(seedId);
+            if (_database.Get(seedId) is not ItemSeed seed)
+                return;
 
-            if (config is ItemSeed seeds)
+            if (seed.GhostObject == null)
             {
-                _currentSeed = seeds;
-
-                if (currentGhost != null)
-                    Destroy(currentGhost.gameObject);
-
-                currentGhost = Instantiate(_currentSeed.GhostObject);
-                currentGhost.Init(_currentSeed);
-
-                _isPlanting = true;
+                Debug.LogError($"[PlayerPlacement] {seed.name}: GhostObject is not assigned.", this);
+                return;
             }
+
+            CleanUpGhost();
+
+            _currentSeed = seed;
+            _currentGhost = Instantiate(seed.GhostObject);
+            _currentGhost.Init(seed);
+
+            IsPlanting = true;
         }
 
         public void ConfirmPlacement()
         {
-            if (!isLocalPlayer || !_isPlanting) return;
+            if (!isLocalPlayer || !IsPlanting) return;
 
             if (!_canPlant)
             {
@@ -80,52 +72,57 @@ namespace Gameplay.Player
                 return;
             }
 
-            CmdConfirmPlacement(_currentSeed.Id, interaction.LookPoint);
+            CmdConfirmPlacement(_currentSeed.Id, _interaction.LookPoint);
 
             CleanUpGhost();
         }
-        [Command]
-        private void CmdConfirmPlacement(int seedId, Vector3 spawnPosition)
-        {
-            var config = db.Get(seedId);
-            if (config is ItemSeed seedConfig)
-            {
-                ServerConfirmPlacement(seedConfig, spawnPosition);
-            }
-        }
-        [Server]
-        private void ServerConfirmPlacement(ItemSeed seedConfig, Vector3 position)
-        {
-            int id = seedConfig.Id;
-            if (_inventory.HasItem(id))
-            {
-                Plant i = Instantiate(seedConfig.PlantStartObject, position, Quaternion.identity);
-                i.Init(netId, seedConfig.Id);
-                GameObject instance = i.gameObject;
-                NetworkServer.Spawn(instance, connectionToClient);
-                if (!_inventory.TryRemoveItem(id, 1))
-                {
-                    NetworkServer.Destroy(instance);
-                }
-            }
-        }
-        private void OnChangedSlot(int i)
-        {
 
-        }
         public void CancelPlacement()
         {
             CleanUpGhost();
         }
+
+        [Command]
+        private void CmdConfirmPlacement(int seedId, Vector3 spawnPosition)
+        {
+            if (_database.Get(seedId) is ItemSeed seedConfig)
+                ServerConfirmPlacement(seedConfig, spawnPosition);
+        }
+
+        [Server]
+        private void ServerConfirmPlacement(ItemSeed seedConfig, Vector3 position)
+        {
+            if (seedConfig.PlantStartObject == null)
+            {
+                Debug.LogError($"[PlayerPlacement] {seedConfig.name}: PlantStartObject is not assigned.", this);
+                return;
+            }
+
+            int id = seedConfig.Id;
+
+            if (!_inventory.HasItem(id))
+                return;
+
+            Plant plant = Instantiate(seedConfig.PlantStartObject, position, Quaternion.identity);
+            plant.Init(netId, id);
+
+            GameObject instance = plant.gameObject;
+            NetworkServer.Spawn(instance, connectionToClient);
+
+            if (!_inventory.TryRemoveItem(id, 1))
+                NetworkServer.Destroy(instance);
+        }
+
         private void CleanUpGhost()
         {
-            if (currentGhost != null)
+            if (_currentGhost != null)
             {
-                Destroy(currentGhost.gameObject);
-                currentGhost = null;
+                Destroy(_currentGhost.gameObject);
+                _currentGhost = null;
             }
+
             _currentSeed = null;
-            _isPlanting = false;
+            IsPlanting = false;
             _canPlant = false;
         }
     }

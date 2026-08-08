@@ -18,6 +18,10 @@ public static class ItemDatabaseBuilder
                     AssetDatabase.GUIDToAssetPath(g)))
             .ToList();
 
+        // The lookup dictionaries live on the ScriptableObject and survive the
+        // rebuild, so drop them or Get() keeps serving the old set.
+        db.Invalidate();
+
         EditorUtility.SetDirty(db);
         AssetDatabase.SaveAssets();
 

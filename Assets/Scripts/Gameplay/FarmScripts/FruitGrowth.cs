@@ -4,55 +4,70 @@ namespace Gameplay.Farm
 {
     public class FruitGrowth : MonoBehaviour
     {
-        [SerializeField] private ItemSeed Item;
-        private ItemConfig[] _harvestItems;
-        private int currentStage = 0;
-        private GameObject currentFruit;
-        private float nextStageTime;
-        private bool isInit = false;
+        [SerializeField] private ItemSeed _item;
 
-        public void Init(ItemSeed ItemSeed)
+        private ItemConfig[] _harvestItems;
+        private GameObject _currentFruit;
+        private int _currentStage;
+        private float _nextStageTime;
+        private bool _isInit;
+
+        public void Init(ItemSeed itemSeed)
         {
-            isInit = true;
-            Item = ItemSeed;
-            _harvestItems = Item.HarvestItem;
+            _item = itemSeed;
+            _harvestItems = _item != null ? _item.HarvestItem : null;
+
+            if (_harvestItems == null || _harvestItems.Length == 0)
+            {
+                Debug.LogError($"[FruitGrowth] {name}: HarvestItem list is empty.", this);
+                return;
+            }
+
+            _currentStage = 0;
+            _isInit = true;
+
             SpawnStage(0);
             SetNextStageTime();
         }
 
         private void Update()
         {
-            if (!isInit) return;
-            if (currentStage < _harvestItems.Length - 1 && Time.time >= nextStageTime)
+            if (!_isInit) return;
+
+            if (_currentStage < _harvestItems.Length - 1 && Time.time >= _nextStageTime)
             {
-                if (currentFruit == null)
+                if (_currentFruit == null)
                 {
                     Destroy(gameObject);
                     return;
                 }
+
                 NextStage();
             }
         }
 
         private void NextStage()
         {
-            currentStage++;
-            SpawnStage(currentStage);
+            _currentStage++;
+            SpawnStage(_currentStage);
             SetNextStageTime();
         }
 
         private void SpawnStage(int stageIndex)
         {
-            if (_harvestItems[stageIndex].Model == null)
+            ItemConfig stageItem = _harvestItems[stageIndex];
+
+            if (stageItem == null || stageItem.Model == null)
             {
-                Debug.LogError($"Stages not assigned in {_harvestItems[stageIndex].name}");
+                Debug.LogError($"[FruitGrowth] {name}: model for stage {stageIndex} is not assigned.", this);
                 return;
             }
-            if (currentFruit != null)
-                Destroy(currentFruit);
 
-            currentFruit = Instantiate(
-                _harvestItems[stageIndex].Model,
+            if (_currentFruit != null)
+                Destroy(_currentFruit);
+
+            _currentFruit = Instantiate(
+                stageItem.Model,
                 transform.position,
                 Quaternion.identity,
                 transform
@@ -61,8 +76,7 @@ namespace Gameplay.Farm
 
         private void SetNextStageTime()
         {
-            float delay = Random.Range(5f, 7f);
-            nextStageTime = Time.time + delay;
+            _nextStageTime = Time.time + Random.Range(5f, 7f);
         }
     }
 }

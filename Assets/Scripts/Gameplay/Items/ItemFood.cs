@@ -4,14 +4,12 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Item/Food")]
 public class ItemFood : ItemConfig
 {
-    [field: SerializeField] public float commonWeight { get; private set; }
+    [field: SerializeField] public float CommonWeight { get; private set; }
 
-    [Server]
-    public override bool UseServer(
-        NetworkIdentity owner,
-        InventorySlot slot)
+    public override bool UseServer(NetworkIdentity owner, InventorySlot slot)
     {
-        Debug.Log($"You eat a {name} with weight ");
+        // TODO: restore hunger/health proportionally to slot.Weight once the
+        // project has such a system.
         return true;
     }
 }

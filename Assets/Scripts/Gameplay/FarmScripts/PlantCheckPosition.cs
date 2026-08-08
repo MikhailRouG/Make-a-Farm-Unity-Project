@@ -7,25 +7,31 @@ namespace Gameplay.Farm
         [Header("Check Settings")]
         [SerializeField] private Material _confirm;
         [SerializeField] private Material _reject;
-        private LayerMask farmLayer;
-        private LayerMask plantLayer;
-        [SerializeField]
-        private float zonePlantsRadius = 1f,
-            zoneFarmRadius = 0.1f;
+        [SerializeField] private float _zonePlantsRadius = 1f;
+        [SerializeField] private float _zoneFarmRadius = 0.1f;
 
-        private MeshRenderer renderers;
-        private ItemSeed itemSeed;
+        private LayerMask _farmLayer;
+        private LayerMask _plantLayer;
+        private MeshRenderer _renderer;
+        private ItemSeed _itemSeed;
 
         public void Init(ItemSeed item)
         {
-            farmLayer = LayerMask.GetMask("Farm");
-            plantLayer = LayerMask.GetMask("Plant");
-            itemSeed = item;
-            GameObject ghost = Instantiate(itemSeed.Stages[0], transform.position, Quaternion.identity, transform);
-            renderers = ghost.GetComponentInChildren<MeshRenderer>();
+            _farmLayer = LayerMask.GetMask("Farm");
+            _plantLayer = LayerMask.GetMask("Plant");
+            _itemSeed = item;
+
+            if (item.Stages == null || item.Stages.Length == 0 || item.Stages[0] == null)
+            {
+                Debug.LogError($"[PlantCheckPosition] {item.name}: stage 0 prefab is not assigned.", this);
+                return;
+            }
+
+            GameObject ghost = Instantiate(item.Stages[0], transform.position, Quaternion.identity, transform);
+            _renderer = ghost.GetComponentInChildren<MeshRenderer>();
+
             UpdateMaterial(false);
         }
-
 
         public bool CheckZone()
         {
@@ -36,34 +42,34 @@ namespace Gameplay.Farm
 
         private bool IsOnFarm()
         {
-            return Physics.OverlapSphere(transform.position, zoneFarmRadius, farmLayer).Length > 0;
+            return Physics.OverlapSphere(transform.position, _zoneFarmRadius, _farmLayer).Length > 0;
         }
 
         private bool IsCollidingWithPlants()
         {
-            Collider[] plantHits = Physics.OverlapSphere(transform.position, zonePlantsRadius, plantLayer);
-            foreach (var hit in plantHits)
+            Collider[] plantHits = Physics.OverlapSphere(transform.position, _zonePlantsRadius, _plantLayer);
+
+            foreach (Collider hit in plantHits)
             {
                 if (hit.gameObject != gameObject) return true;
             }
+
             return false;
         }
 
         private void UpdateMaterial(bool canPlant)
         {
-            if (renderers == null || itemSeed == null) return;
+            if (_renderer == null || _itemSeed == null) return;
 
-            Material mat = canPlant ? _confirm : _reject;
-            renderers.material = mat;
+            _renderer.material = canPlant ? _confirm : _reject;
         }
 
         private void OnDrawGizmosSelected()
         {
             Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(transform.position, zonePlantsRadius);
+            Gizmos.DrawWireSphere(transform.position, _zonePlantsRadius);
             Gizmos.color = Color.grey;
-            Gizmos.DrawWireSphere(transform.position, zoneFarmRadius);
+            Gizmos.DrawWireSphere(transform.position, _zoneFarmRadius);
         }
     }
-
 }

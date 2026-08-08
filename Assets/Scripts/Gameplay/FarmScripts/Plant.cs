@@ -41,16 +41,21 @@ namespace Gameplay.Farm
         {
             _database = ItemDatabase.Instance;
         }
+
         public override void OnStartClient()
         {
             base.OnStartClient();
+
             TryUpdateVisual();
+
             ItemSeed seed = Seed;
 
             if (seed == null)
                 return;
-            OnInitialized?.Invoke(_size,seed.Effect);
+
+            OnInitialized?.Invoke(_size, seed.Effect);
         }
+
         [Server]
         public void Init(uint ownerId, int id)
         {
@@ -58,14 +63,22 @@ namespace Gameplay.Farm
             _seedId = id;
             _stageIndex = 0;
             _size = Random.Range(0.2f, 2.0f);
+
             if (_growCoroutine != null) StopCoroutine(_growCoroutine);
             _growCoroutine = StartCoroutine(GrowRoutine());
         }
+
         [Server]
         private IEnumerator GrowRoutine()
         {
             yield return new WaitUntil(() => _seedId >= 0);
             yield return new WaitUntil(() => Seed != null);
+
+            if (Seed.Stages == null || Seed.Stages.Length == 0)
+            {
+                Debug.LogError($"[Plant] {Seed.name}: Stages are not assigned.", this);
+                yield break;
+            }
 
             int lastStage = Seed.Stages.Length - 1;
 
@@ -77,25 +90,22 @@ namespace Gameplay.Farm
 
             OnLastStage();
         }
+
         [Client]
         private void TryUpdateVisual()
         {
             if (!isClient) return;
-            if (_seedId < 0 || _stageIndex < 0)
-            {
-                Debug.Log($"[Plant] Waiting sync. seedId={_seedId}, stage={_stageIndex}", this);
-                return;
-            }
+            if (_seedId < 0 || _stageIndex < 0) return;
+
             UpdateVisual(_stageIndex);
         }
+
         [Client]
         private void UpdateVisual(int stage)
         {
             if (_seedId < 0 || _stageIndex < 0)
-            {
-                Debug.Log(_seedId + _stageIndex);
                 return;
-            }
+
             ItemSeed seed = Seed;
             if (seed == null || seed.Stages == null || stage < 0 || stage >= seed.Stages.Length)
             {
@@ -103,13 +113,18 @@ namespace Gameplay.Farm
                 return;
             }
 
-
             if (_currentVisual != null)
                 Destroy(_currentVisual);
+
             if (stage >= seed.Stages.Length - 1)
+                return;
+
+            if (seed.Stages[stage] == null)
             {
+                Debug.LogWarning($"[Plant] {seed.name}: stage {stage} prefab is not assigned.", this);
                 return;
             }
+
             _currentVisual = Instantiate(
                 seed.Stages[stage],
                 transform.position,
@@ -117,62 +132,82 @@ namespace Gameplay.Farm
                 transform
             );
 
-            if (_stageIndex == 0)
+            if (stage == 0)
             {
-                OnInitialized?.Invoke(_size ,_seed.Effect);
-                OnUpdateStage?.Invoke(EffectState.Start, _seed.TimePerStage.ToString());
+                OnInitialized?.Invoke(_size, seed.Effect);
+                OnUpdateStage?.Invoke(EffectState.Start, seed.TimePerStage.ToString());
             }
-            else OnUpdateStage?.Invoke(EffectState.Upgrade, _seed.TimePerStage.ToString());
-            if (_currentVisual.TryGetComponent<AppearAnimation>(out var animation))
+            else
             {
+                OnUpdateStage?.Invoke(EffectState.Upgrade, seed.TimePerStage.ToString());
+            }
+
+            if (_currentVisual.TryGetComponent(out AppearAnimation animation))
                 animation.Initialize(_size);
-            }
         }
+
+        // Mirror assigns the SyncVar before invoking the hook, so the field
+        // already holds newStage/newId — no need to assign it again here.
         private void OnStageChanged(int oldStage, int newStage)
         {
-            _stageIndex = newStage;
             TryUpdateVisual();
 
             ItemSeed seed = Seed;
-            if (seed != null && newStage >= seed.Stages.Length - 1)
+            if (seed != null && seed.Stages != null && newStage >= seed.Stages.Length - 1)
                 OnUpdateStage?.Invoke(EffectState.Grow, "Can be collected");
         }
 
         private void OnSeedSynced(int oldId, int newId)
         {
-            _seedId = newId;
             _seed = null;
             TryUpdateVisual();
         }
+
         [Server]
         private void OnLastStage()
         {
-            GameObject obj = Instantiate(
-               _seed.Stages[_seed.Stages.Length - 1],
-               transform.position,
-               Quaternion.identity
-           );
-            if (obj.TryGetComponent<IHarvestable>(out IHarvestable component))
+            ItemSeed seed = Seed;
+
+            if (seed == null || seed.Stages == null || seed.Stages.Length == 0)
+                return;
+
+            GameObject lastStagePrefab = seed.Stages[seed.Stages.Length - 1];
+
+            if (lastStagePrefab == null)
             {
-                component.StartHarvesting(_ownerNetId, _seed.Id, _size);
+                Debug.LogError($"[Plant] {seed.name}: last stage prefab is not assigned.", this);
+                return;
+            }
+
+            GameObject obj = Instantiate(
+                lastStagePrefab,
+                transform.position,
+                Quaternion.identity
+            );
+
+            if (obj.TryGetComponent(out IHarvestable component))
+            {
+                component.StartHarvesting(_ownerNetId, seed.Id, _size);
                 component.OnDestroyedServer += OnDestroyedPlant;
             }
             else
             {
-                Debug.LogWarning($"[Plant] {obj.name} IHarvestable! .");
+                Debug.LogWarning($"[Plant] {obj.name} does not implement IHarvestable.", this);
             }
+
             NetworkServer.Spawn(obj);
         }
+
         private void OnDestroy()
         {
             if (!isServer) return;
             if (_growCoroutine != null) StopCoroutine(_growCoroutine);
         }
+
         private void OnDestroyedPlant()
         {
             OnUpdateStage?.Invoke(EffectState.Destroy, string.Empty);
             NetworkServer.Destroy(gameObject);
         }
     }
-
 }

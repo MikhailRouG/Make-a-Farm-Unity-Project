@@ -1,5 +1,6 @@
-using UnityEngine;
 using Gameplay.Farm;
+using UnityEngine;
+
 [CreateAssetMenu(
     fileName = "Effect Config",
     menuName = "Game/Effects/Effect Config"
@@ -10,16 +11,20 @@ public class EffectConfig : ScriptableObject
 
     public bool TryGetEffect(EffectState state, out EffectEntry effect)
     {
+        effect = null;
+
+        if (_effects == null)
+            return false;
+
         foreach (EffectEntry entry in _effects)
         {
-            if (entry.State == state)
+            if (entry != null && entry.State == state)
             {
                 effect = entry;
                 return true;
             }
         }
 
-        effect = null;
         return false;
     }
 }
