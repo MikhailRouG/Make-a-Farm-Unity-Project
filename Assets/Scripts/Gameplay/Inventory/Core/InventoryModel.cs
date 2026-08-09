@@ -2,8 +2,7 @@ using System;
 using System.Collections.Generic;
 
 /// <summary>
-/// The storage is taken as an IList so the same logic runs against a
-/// SyncList in game and a plain List in tests. SyncList implements IList
+/// SyncList implements IList
 /// through its ordinary public indexer, so assigning an element here still
 /// goes through the setter that records the change and marks it dirty.
 /// </summary>
