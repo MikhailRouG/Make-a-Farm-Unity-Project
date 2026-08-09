@@ -99,7 +99,6 @@ namespace Gameplay.Player
         }
 
         // The target comes from the client, so the distance is re-checked here.
-        // The tolerance absorbs the position drift between client and server.
         [Command]
         private void CmdExecuteInteraction(NetworkIdentity targetIdentity)
         {

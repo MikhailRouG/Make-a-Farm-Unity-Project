@@ -14,7 +14,8 @@ GameObject:
   - component: {fileID: 4986889452620291317}
   - component: {fileID: 6112876846334100022}
   - component: {fileID: 3341162878602928182}
-  m_Layer: 2
+  - component: {fileID: 7213908455261730944}
+  m_Layer: 8
   m_Name: PlantStartObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -104,6 +105,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlantText
   _plant: {fileID: 2921874841248964185}
+  _care: {fileID: 7213908455261730944}
   _textObject: {fileID: 5126676777005102407}
   _showDistance: 5
 --- !u!114 &3341162878602928182
@@ -299,3 +301,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 2317547500146015201}
   m_maskType: 0
+--- !u!114 &7213908455261730944
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6543500234838181880}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d2f28a9d57a465b927ddb762d7e189e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncMethod: 0
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0

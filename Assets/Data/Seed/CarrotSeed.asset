@@ -15,7 +15,7 @@ MonoBehaviour:
   <Id>k__BackingField: 100
   <Name>k__BackingField: Carrot seed
   <Rarity>k__BackingField: 0
-  <Price>k__BackingField: 30
+  <Price>k__BackingField: 10
   <Category>k__BackingField: 0
   <Icon>k__BackingField: {fileID: 21300000, guid: 74673dad579a09449997fcf0094c4f84, type: 3}
   <Model>k__BackingField: {fileID: 0}
@@ -32,3 +32,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d9b23277d4e662a49ad06a92a8c7f5e1, type: 2}
   <TimePerStage>k__BackingField: 3
   <Effect>k__BackingField: {fileID: 11400000, guid: 6f9cd2bb136121a478614803a1cc0c94, type: 2}
+  <MaxHealth>k__BackingField: 100
+  <DrainPerSecond>k__BackingField: 2
+  <RegenPerSecond>k__BackingField: 1
+  <RepeatEvery>k__BackingField: 60
+  <Requirements>k__BackingField: []

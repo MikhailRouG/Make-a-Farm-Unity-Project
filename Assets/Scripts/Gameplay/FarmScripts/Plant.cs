@@ -8,6 +8,10 @@ namespace Gameplay.Farm
 {
     public class Plant : NetworkBehaviour
     {
+        [Header("Growth")]
+        [Tooltip("Multiplies the seed's TimePerStage. 2 grows twice as fast.")]
+        [SerializeField, Min(0.01f)] private float _growthSpeed = 1f;
+
         [SyncVar(hook = nameof(OnSeedSynced))]
         private int _seedId = -1;
 
@@ -16,15 +20,38 @@ namespace Gameplay.Farm
 
         [SyncVar] private uint _ownerNetId;
         [SyncVar] private float _size;
+
+        [SyncVar] private double _stageEndTime;
+
         private ItemDatabase _database;
         private ItemSeed _seed;
         private GameObject _currentVisual;
         private Coroutine _growCoroutine;
 
-        public event Action<float,EffectConfig> OnInitialized;
-        public event Action<EffectState, string> OnUpdateStage;
+        public event Action<float, EffectConfig> OnInitialized;
+        public event Action<EffectState> OnUpdateStage;
 
-        private ItemSeed Seed
+        public bool HasStageDeadline => _stageEndTime > 0d;
+
+        public float GrowthSpeed => _growthSpeed;
+
+        public bool IsFullyGrown
+        {
+            get
+            {
+                ItemSeed seed = Seed;
+
+                if (seed == null || seed.Stages == null || seed.Stages.Length == 0)
+                    return false;
+
+                return _stageIndex >= seed.Stages.Length - 1;
+            }
+        }
+
+        public float RemainingStageTime =>
+            IsFullyGrown ? 0f : Mathf.Max(0f, (float)(_stageEndTime - NetworkTime.time));
+
+        public ItemSeed Seed
         {
             get
             {
@@ -64,9 +91,28 @@ namespace Gameplay.Farm
             _stageIndex = 0;
             _size = Random.Range(0.2f, 2.0f);
 
+            ItemSeed seed = Seed;
+            if (seed != null)
+                _stageEndTime = NetworkTime.time + StageDuration(seed);
+
             if (_growCoroutine != null) StopCoroutine(_growCoroutine);
             _growCoroutine = StartCoroutine(GrowRoutine());
         }
+
+        [Server]
+        public void SetGrowthSpeed(float value)
+        {
+            _growthSpeed = Mathf.Max(0.01f, value);
+        }
+
+        [Server]
+        public void Kill()
+        {
+            OnUpdateStage?.Invoke(EffectState.Destroy);
+            NetworkServer.Destroy(gameObject);
+        }
+
+        private float StageDuration(ItemSeed seed) => seed.TimePerStage / _growthSpeed;
 
         [Server]
         private IEnumerator GrowRoutine()
@@ -84,9 +130,15 @@ namespace Gameplay.Farm
 
             while (_stageIndex < lastStage)
             {
-                yield return new WaitForSeconds(Seed.TimePerStage);
+                float duration = StageDuration(Seed);
+                _stageEndTime = NetworkTime.time + duration;
+
+                yield return new WaitForSeconds(duration);
+
                 _stageIndex++;
             }
+
+            _stageEndTime = 0d;
 
             OnLastStage();
         }
@@ -135,26 +187,24 @@ namespace Gameplay.Farm
             if (stage == 0)
             {
                 OnInitialized?.Invoke(_size, seed.Effect);
-                OnUpdateStage?.Invoke(EffectState.Start, seed.TimePerStage.ToString());
+                OnUpdateStage?.Invoke(EffectState.Start);
             }
             else
             {
-                OnUpdateStage?.Invoke(EffectState.Upgrade, seed.TimePerStage.ToString());
+                OnUpdateStage?.Invoke(EffectState.Upgrade);
             }
 
             if (_currentVisual.TryGetComponent(out AppearAnimation animation))
                 animation.Initialize(_size);
         }
 
-        // Mirror assigns the SyncVar before invoking the hook, so the field
-        // already holds newStage/newId — no need to assign it again here.
         private void OnStageChanged(int oldStage, int newStage)
         {
             TryUpdateVisual();
 
             ItemSeed seed = Seed;
             if (seed != null && seed.Stages != null && newStage >= seed.Stages.Length - 1)
-                OnUpdateStage?.Invoke(EffectState.Grow, "Can be collected");
+                OnUpdateStage?.Invoke(EffectState.Grow);
         }
 
         private void OnSeedSynced(int oldId, int newId)
@@ -204,10 +254,6 @@ namespace Gameplay.Farm
             if (_growCoroutine != null) StopCoroutine(_growCoroutine);
         }
 
-        private void OnDestroyedPlant()
-        {
-            OnUpdateStage?.Invoke(EffectState.Destroy, string.Empty);
-            NetworkServer.Destroy(gameObject);
-        }
+        private void OnDestroyedPlant() => Kill();
     }
 }

@@ -17,4 +17,7 @@ public struct InventorySlot
         Amount = amount;
         Weight = weight;
     }
+
+    // Returns a copy instead of mutating: slots live inside a SyncList
+    public InventorySlot WithAmount(int amount) => new InventorySlot(ItemId, amount, Weight);
 }

@@ -35,7 +35,7 @@ namespace Gameplay.Farm
             _config = effect;
         }
 
-        private void PlayLocal(EffectState state, string text)
+        private void PlayLocal(EffectState state)
         {
             if (_config == null) return;
 
@@ -98,7 +98,7 @@ namespace Gameplay.Farm
         {
             if (gameObject.scene.isLoaded)
             {
-                PlayLocal(EffectState.Destroy, string.Empty);
+                PlayLocal(EffectState.Destroy);
             }
         }
     }

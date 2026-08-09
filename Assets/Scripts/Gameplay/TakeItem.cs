@@ -27,8 +27,6 @@ namespace Gameplay.Farm
             if (!interactor.TryGetComponent(out Inventory inventory))
                 return;
 
-            // Destroyed only after a successful hand-over: on a full inventory the
-            // item must stay in the world instead of vanishing for nothing.
             if (inventory.TryAddItem(_data.Id, 1))
                 NetworkServer.Destroy(gameObject);
         }

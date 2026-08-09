@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: Carrot
   m_EditorClassIdentifier: Assembly-CSharp::ItemFood
   <Id>k__BackingField: 200
-  <Category>k__BackingField: 1
   <Name>k__BackingField: Carrot
-  <Price>k__BackingField: 1
+  <Rarity>k__BackingField: 0
+  <Price>k__BackingField: 40
+  <Category>k__BackingField: 1
   <Icon>k__BackingField: {fileID: 21300000, guid: 489b85679be29d046902881b5bc48813, type: 3}
   <Model>k__BackingField: {fileID: 2520595524603225583, guid: 2b25f517a12de7a42b65f8fe6b558319, type: 3}
   <IsStackable>k__BackingField: 0
   <MaxStackSize>k__BackingField: 32
-  <ConsumeOnUse>k__BackingField: 1
   <CommonWeight>k__BackingField: 0.2
