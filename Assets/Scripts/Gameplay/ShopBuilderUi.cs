@@ -55,7 +55,6 @@ namespace Gameplay.Player.UI.Shop
 
         public void OpenShop(PlayerShopServer buyer)
         {
-            Cursor.visible = true;
             _playerShopServer = buyer;
             gameObject.SetActive(true);
             SelectTab(_defaultCategory);
@@ -64,7 +63,6 @@ namespace Gameplay.Player.UI.Shop
 
         public void CloseShop()
         {
-            Cursor.visible = false;
             ClearShop();
             _playerShopServer = null;
             gameObject.SetActive(false);

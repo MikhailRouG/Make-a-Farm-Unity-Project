@@ -10,24 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fb0ad74fd9af74245a9227f9a1c148bc, type: 3}
-  m_Name: CarrotSeed
+  m_Name: RadishSeed
   m_EditorClassIdentifier: Assembly-CSharp::ItemSeed
-  <Id>k__BackingField: 100
-  <Name>k__BackingField: Carrot seed
+  <Id>k__BackingField: 102
+  <Name>k__BackingField: Radish
   <Rarity>k__BackingField: 0
-  <Price>k__BackingField: 10
+  <Price>k__BackingField: 0
   <Category>k__BackingField: 0
-  <Icon>k__BackingField: {fileID: 21300000, guid: 74673dad579a09449997fcf0094c4f84, type: 3}
+  <Icon>k__BackingField: {fileID: 21300000, guid: 3420477bfc4b6e247b66a661e35ccee6, type: 3}
   <Model>k__BackingField: {fileID: 0}
   <IsStackable>k__BackingField: 1
   <MaxStackSize>k__BackingField: 32
   <Stages>k__BackingField:
-  - {fileID: 4830069918918255618, guid: 2e4b8508f7329ac4b92d489800ce38a5, type: 3}
-  - {fileID: 3126114035409639131, guid: 830c003de740cf94e9c3a8bf827f6f06, type: 3}
-  - {fileID: 6679327620857613801, guid: 9961a7c9e2871af4c9c7987a3e20aa95, type: 3}
-  - {fileID: 2520595524603225583, guid: 4ba1bb81785b6f344b31b0cbaa8c67d2, type: 3}
+  - {fileID: 512930259687825000, guid: 84b0a623085151747abed3af08ffadec, type: 3}
+  - {fileID: 8133459418832911624, guid: 076248d3d7195614fbf4d0c260c3573a, type: 3}
+  - {fileID: 5286300742695237396, guid: c0433d17507912245941559e2084bda2, type: 3}
   <HarvestItem>k__BackingField:
-  - {fileID: 11400000, guid: d9b23277d4e662a49ad06a92a8c7f5e1, type: 2}
+  - {fileID: 11400000, guid: 8e4f58058474b164abcaed6a0b94974f, type: 2}
   <TimePerStage>k__BackingField: 5
   <Effect>k__BackingField: {fileID: 11400000, guid: 6f9cd2bb136121a478614803a1cc0c94, type: 2}
   <MaxHealth>k__BackingField: 100

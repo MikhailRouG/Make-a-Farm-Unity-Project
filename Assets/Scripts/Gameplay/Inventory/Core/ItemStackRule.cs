@@ -1,6 +1,3 @@
-/// <summary>
-/// The only thing the inventory logic needs to know about an item.
-/// </summary>
 public readonly struct ItemStackRule
 {
     public readonly bool IsStackable;
@@ -12,7 +9,6 @@ public readonly struct ItemStackRule
         MaxStackSize = maxStackSize;
     }
 
-    /// <summary>How many of this item a single slot can hold.</summary>
     public int SlotCapacity => IsStackable ? MaxStackSize : 1;
 }
 

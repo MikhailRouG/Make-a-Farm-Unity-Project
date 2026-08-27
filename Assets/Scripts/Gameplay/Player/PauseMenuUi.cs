@@ -52,9 +52,6 @@ namespace Gameplay.Player
             if (_panelRoot != null)
                 _panelRoot.SetActive(true);
 
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-
             _player?.SetInputEnabled(false);
             UiManager.Instance?.Register(this);
         }

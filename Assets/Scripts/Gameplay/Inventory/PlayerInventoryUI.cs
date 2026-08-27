@@ -7,6 +7,7 @@ namespace Gameplay.Player
     {
         [SerializeField] private List<InventorySlotUI> _slotsUI;
 
+
         private Inventory _inventory;
         private PlayerInventory _playerInventory;
         private ItemDatabase _itemDatabase;
@@ -120,7 +121,7 @@ namespace Gameplay.Player
                     continue;
                 }
 
-                _slotsUI[i].Set(item.Icon, slot);
+                _slotsUI[i].Set(item.Icon, slot, RarityColors.Of(item.Rarity));
             }
         }
 

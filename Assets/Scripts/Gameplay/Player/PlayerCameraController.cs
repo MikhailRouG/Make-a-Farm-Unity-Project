@@ -1,12 +1,10 @@
-using Unity.Cinemachine;
 using UnityEngine;
 
 namespace Gameplay.Player
 {
     public class PlayerCameraController : MonoBehaviour
     {
-        [SerializeField] private PlayerCameraRig _cameraPrefab;
-        [SerializeField] private Transform _cameraTarget;
+        [SerializeField] private PlayerCameraRig _cameraRig;
         [SerializeField] private GameObject[] _playerModel;
         [Header("Camera Settings")]
         [SerializeField] private float mouseSensitivity = 100f;
@@ -17,60 +15,76 @@ namespace Gameplay.Player
         [SerializeField] private float _maxDistance = 5f;
         [SerializeField] private bool _firstPerson;
 
-        private const float MouseDeltaScale = 1f / 140f;
-
-        private PlayerCameraRig _cameraRig;
-        private Transform _cameraTrackTransform;
+        private Transform _rigTransform;
         private float xRotation;
         private float yRotation;
+        private bool _initialized;
 
         public bool FirstPerson => _firstPerson;
-        public Transform AimTransform => _cameraTrackTransform;
+        public Transform AimTransform => _rigTransform;
 
-        public void Initialize()
+        private void Awake()
         {
-            if (_cameraPrefab == null || _cameraTarget == null)
+            if (_cameraRig == null) _cameraRig = GetComponentInChildren<PlayerCameraRig>(true);
+            if (_cameraRig == null)
             {
-                Debug.LogError($"[{nameof(PlayerCameraController)}] Camera prefab or target is not assigned.", this);
+                Debug.LogError($"[{nameof(PlayerCameraController)}] Camera rig is not assigned.", this);
                 return;
             }
 
-            Vector3 currentRotation = _cameraTarget.localEulerAngles;
+            _rigTransform = _cameraRig.transform;
+
+            // The rig ships inside the player prefab, so every spawned player owns one.
+            // Off until Initialize: only the local player's rig may drive the brain,
+            // otherwise remote players fight over it for the same output channel.
+            _cameraRig.gameObject.SetActive(false);
+        }
+
+        public void Initialize()
+        {
+            if (_cameraRig == null) return;
+
+            _cameraRig.gameObject.SetActive(true);
+
+            Vector3 currentRotation = _rigTransform.rotation.eulerAngles;
             xRotation = NormalizeAngle(currentRotation.x);
             yRotation = NormalizeAngle(currentRotation.y);
 
-            _cameraRig = Instantiate(_cameraPrefab);
-            _cameraTrackTransform = _cameraRig.transform;
+            _initialized = true;
 
+            ApplyRotation();
             ChangeCamera(_firstPerson);
         }
 
+        // Re-applied every frame, not only on look input: the rig is a child of the
+        // player and the body turns to follow the camera, so an inherited rotation
+        // would feed that turn back into the look direction and drift.
         private void LateUpdate()
         {
-            if (_cameraTrackTransform == null || _cameraTarget == null) return;
+            if (!_initialized) return;
 
-            _cameraTrackTransform.position = _cameraTarget.position;
+            ApplyRotation();
         }
 
         public void HandleRotate(Vector2 look, bool isPointerDelta = true)
         {
-            if (_cameraTarget == null || _cameraTrackTransform == null) return;
+            if (!_initialized) return;
             if (_firstPerson && Cursor.visible) return;
 
             float scale = isPointerDelta
-                ? mouseSensitivity * MouseDeltaScale
+                ? mouseSensitivity * 0.01f
                 : gamepadSensitivity * Time.deltaTime;
 
             xRotation -= look.y * scale;
             xRotation = Mathf.Clamp(xRotation, -clampAngle, clampAngle);
             yRotation += look.x * scale;
 
-            _cameraTrackTransform.localRotation = Quaternion.Euler(xRotation, yRotation, 0f);
+            ApplyRotation();
         }
 
         public void HandleZoom(float zoom)
         {
-            if (_cameraRig == null) return;
+            if (!_initialized) return;
 
             if (_cameraRig.FirstPersonCamera.enabled)
             {
@@ -92,6 +106,13 @@ namespace Gameplay.Player
             }
             newDistance = Mathf.Clamp(newDistance, _minDistance, _maxDistance);
             _cameraRig.ThirdPersonFollow.CameraDistance = newDistance;
+        }
+
+        // World rotation, not local: the pivot follows the player's position through
+        // the hierarchy, but its aim must stay independent of the body's yaw.
+        private void ApplyRotation()
+        {
+            _rigTransform.rotation = Quaternion.Euler(xRotation, yRotation, 0f);
         }
 
         private void ChangeCamera(bool firstCamera)

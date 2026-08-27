@@ -18,6 +18,11 @@ namespace Gameplay.Player
         private bool _inputEnabled = true;
         private bool _inputBound;
 
+        // Whether the player wants the cursor shown. Owned by the toggle key and by
+        // camera-mode changes, never overwritten by the per-frame logic.
+        private bool _cursorWanted = true;
+        private bool _lastFirstPerson;
+
         public event Action onUseItem;
         public event Action onEsc;
 
@@ -43,8 +48,6 @@ namespace Gameplay.Player
 
         private void OnEnable()
         {
-            // Rebound here and not only in OnStartLocalPlayer, so that disabling
-            // and re-enabling the object does not drop input for good.
             if (isLocalPlayer) BindInput();
         }
 
@@ -94,21 +97,26 @@ namespace Gameplay.Player
             _jumpPressed = false;
         }
 
+        // While a UI is open the cursor and the camera belong to UiManager: the player
+        // must not fight it from Update, which runs after and would always win.
+        private static bool UiOpen => UiManager.Instance != null && UiManager.Instance.HasOpenUi;
+
         private void Update()
         {
             if (!isLocalPlayer) return;
             if (!_inputEnabled) return;
 
-            CursorHandle();
+            bool uiOpen = UiOpen;
+
+            if (!uiOpen)
+                CursorHandle();
 
             Vector2 moveDir = _input.Player.Move.ReadValue<Vector2>();
             Vector2 lookDir = _input.Player.Look.ReadValue<Vector2>();
             float zoom = _input.Player.Zoom.ReadValue<float>();
             bool isRunning = _input.Player.Shift.IsPressed();
 
-            // Order matters: camera first (movement is built from its direction in
-            // this same frame), then gravity, movement and body rotation.
-            if (_cameraController != null)
+            if (_cameraController != null && !uiOpen)
             {
                 bool lookIsPointerDelta = _input.Player.Look.activeControl?.device is Pointer;
                 if (Cursor.visible == false) _cameraController.HandleRotate(lookDir, lookIsPointerDelta);
@@ -141,6 +149,7 @@ namespace Gameplay.Player
             if (!ctx.performed) return;
             if (!_inputEnabled) return;
             if (_interaction == null) return;
+            if (UiOpen) return;
 
             _interaction.TryInteract();
         }
@@ -151,7 +160,15 @@ namespace Gameplay.Player
             if (!_inputEnabled) return;
             if (_playerInventory == null) return;
 
+            // Input actions fire even when the click landed on a button, so without
+            // this a click inside the shop would hide the cursor and use an item.
+            if (UiOpen) return;
+
+            // Through the wish, not straight into Cursor: a direct write would be
+            // undone by CursorHandle on the very next frame.
+            _cursorWanted = false;
             Cursor.visible = false;
+
             onUseItem?.Invoke();
         }
 
@@ -181,31 +198,39 @@ namespace Gameplay.Player
             if (_placement != null && _placement.IsPlanting) _placement.ConfirmPlacement();
         }
 
+        // Always flips, whatever else is going on: no UI check, and CursorHandle reads
+        // _cursorWanted instead of deciding on its own, so it cannot undo the press.
         private void OnChangeCursor(InputAction.CallbackContext ctx)
         {
-            Cursor.visible = !Cursor.visible;
+            _cursorWanted = !_cursorWanted;
+            Cursor.visible = _cursorWanted;
         }
 
         private void CursorHandle()
         {
             if (_cameraController == null || _interaction == null) return;
 
-            if (_cameraController.FirstPerson)
+            bool firstPerson = _cameraController.FirstPerson;
+
+            // Switching camera mode resets the wish to that mode's default, otherwise
+            // a toggle made in third person would follow you into first person.
+            if (firstPerson != _lastFirstPerson)
             {
-                _interaction.InteractionByForward();
-                return;
+                _lastFirstPerson = firstPerson;
+                _cursorWanted = !firstPerson;
             }
 
-            if (_input.Player.RightClick.IsPressed())
-            {
-                Cursor.visible = false;
-                _interaction.InteractionByForward();
-            }
-            else
-            {
-                Cursor.visible = true;
+            // Holding right mouse means "I am looking around": the cursor hides for as
+            // long as it is held and comes back on release, without touching the wish.
+            bool lookingAround = !firstPerson && _input.Player.RightClick.IsPressed();
+            bool visible = _cursorWanted && !lookingAround;
+
+            Cursor.visible = visible;
+
+            if (visible)
                 _interaction.InteractionByCursor();
-            }
+            else
+                _interaction.InteractionByForward();
         }
     }
 }

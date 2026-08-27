@@ -16,6 +16,7 @@ namespace Gameplay.Farm
         private Transform _cameraTransform;
         private Transform _target;
         private string _shownText = string.Empty;
+        private PlantRequirement _need;
 
         private void OnValidate()
         {
@@ -29,7 +30,27 @@ namespace Gameplay.Farm
             _shownText = null;
             SetText(string.Empty);
 
+            if (_care != null)
+            {
+                _care.OnChangedReqirement += OnNeedChanged;
+
+                // The hook stays silent when the incoming value matches what the
+                // object already holds, so the current state has to be read once.
+                OnNeedChanged(_care.CurrentNeed, _care.NeedsCare);
+            }
+
             if (Camera.main != null) _cameraTransform = Camera.main.transform;
+        }
+
+        private void OnDisable()
+        {
+            if (_care != null)
+                _care.OnChangedReqirement -= OnNeedChanged;
+        }
+
+        private void OnNeedChanged(PlantRequirement need, bool needed)
+        {
+            _need = needed ? need : null;
         }
 
         private void Update()
@@ -66,7 +87,7 @@ namespace Gameplay.Farm
         // so a plant without a PlantCare component just shows its timer.
         private string BuildLabel()
         {
-            if (_care != null && _care.NeedsCare) return $"{_care.InteractionPrompt}{HealthSuffix()}";
+            if (_need != null) return $"{_need.Prompt}{HealthSuffix()}";
             if (_plant.IsFullyGrown) return ReadyText;
             if (_plant.HasStageDeadline) return $"Time {_plant.RemainingStageTime:F1}{HealthSuffix()}";
 

@@ -8,8 +8,6 @@ namespace Gameplay.Farm
 {
     public class Plant : NetworkBehaviour
     {
-        [Header("Growth")]
-        [Tooltip("Multiplies the seed's TimePerStage. 2 grows twice as fast.")]
         [SerializeField, Min(0.01f)] private float _growthSpeed = 1f;
 
         [SyncVar(hook = nameof(OnSeedSynced))]
@@ -20,7 +18,6 @@ namespace Gameplay.Farm
 
         [SyncVar] private uint _ownerNetId;
         [SyncVar] private float _size;
-
         [SyncVar] private double _stageEndTime;
 
         private ItemDatabase _database;
@@ -89,7 +86,7 @@ namespace Gameplay.Farm
             _ownerNetId = ownerId;
             _seedId = id;
             _stageIndex = 0;
-            _size = Random.Range(0.2f, 2.0f);
+            _size = Random.Range(0.5f, 1.5f);
 
             ItemSeed seed = Seed;
             if (seed != null)
@@ -238,13 +235,13 @@ namespace Gameplay.Farm
             if (obj.TryGetComponent(out IHarvestable component))
             {
                 component.StartHarvesting(_ownerNetId, seed.Id, _size);
+                GetComponent<BoxCollider>().enabled = false;
                 component.OnDestroyedServer += OnDestroyedPlant;
             }
             else
             {
                 Debug.LogWarning($"[Plant] {obj.name} does not implement IHarvestable.", this);
             }
-
             NetworkServer.Spawn(obj);
         }
 

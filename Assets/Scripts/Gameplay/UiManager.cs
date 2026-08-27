@@ -37,12 +37,23 @@ public class UiManager : MonoBehaviour
             return;
 
         _openUi.Add(ui);
-        Cursor.visible = true;
+        ApplyCursor();
     }
 
     public void Unregister(ICloseableUi ui)
     {
-        _openUi.Remove(ui);
+        if (!_openUi.Remove(ui))
+            return;
+
+        ApplyCursor();
+    }
+
+    // The single owner of the cursor while any UI is open. Player stops touching it
+    // in that case, so the two no longer overwrite each other every frame.
+    private void ApplyCursor()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = HasOpenUi;
     }
 
     public void CloseTopUi()

@@ -13,11 +13,7 @@ public abstract class ItemConfig : ScriptableObject
     [field: SerializeField] public bool IsStackable { get; private set; } = true;
 
     [field: SerializeField] public int MaxStackSize { get; private set; } = 32;
-    /// <summary>
-    /// Applies the item on the server.
-    /// Returns true if the item was consumed and should be removed from its slot.
-    /// Seeds return false: they are spent when the planting is confirmed, not on use.
-    /// </summary>
+
     public abstract bool UseServer(
         NetworkIdentity owner,
         InventorySlot slot);
@@ -27,6 +23,7 @@ public enum ItemType
 {
     Seed = 0,
     Harvest = 1,
+    PlantCare = 2,
 }
 public enum ItemRarity
 {

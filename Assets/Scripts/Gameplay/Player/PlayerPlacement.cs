@@ -6,6 +6,9 @@ namespace Gameplay.Player
 {
     public class PlayerPlacement : NetworkBehaviour
     {
+        [SerializeField] private PlantCheckPosition _ghost;
+        [SerializeField] private Plant _plantPrefab;
+
         private ItemDatabase _database;
         private PlayerInteraction _interaction;
         private Inventory _inventory;
@@ -21,8 +24,14 @@ namespace Gameplay.Player
             _database = ItemDatabase.Instance;
             _interaction = GetComponent<PlayerInteraction>();
             _inventory = GetComponent<Inventory>();
+
             IsPlanting = false;
             _canPlant = false;
+        }
+
+        private void OnDestroy()
+        {
+            CleanUpGhost();
         }
 
         private void Update()
@@ -44,20 +53,21 @@ namespace Gameplay.Player
         {
             if (!isLocalPlayer) return;
 
-            if (_database.Get(seedId) is not ItemSeed seed)
-                return;
-
-            if (seed.GhostObject == null)
+            if (_ghost == null)
             {
-                Debug.LogError($"[PlayerPlacement] {seed.name}: GhostObject is not assigned.", this);
+                Debug.LogError($"[{nameof(PlayerPlacement)}] Ghost prefab is not assigned.", this);
                 return;
             }
+
+            if (_database.Get(seedId) is not ItemSeed seed)
+                return;
 
             CleanUpGhost();
 
             _currentSeed = seed;
-            _currentGhost = Instantiate(seed.GhostObject);
-            _currentGhost.Init(seed);
+
+            _currentGhost = Instantiate(_ghost);
+            _currentGhost.Show(seed);
 
             IsPlanting = true;
         }
@@ -68,18 +78,18 @@ namespace Gameplay.Player
 
             if (!_canPlant)
             {
-                CleanUpGhost();
+                StopPlanting();
                 return;
             }
 
             CmdConfirmPlacement(_currentSeed.Id, _interaction.LookPoint);
 
-            CleanUpGhost();
+            StopPlanting();
         }
 
         public void CancelPlacement()
         {
-            CleanUpGhost();
+            StopPlanting();
         }
 
         [Command]
@@ -92,9 +102,9 @@ namespace Gameplay.Player
         [Server]
         private void ServerConfirmPlacement(ItemSeed seedConfig, Vector3 position)
         {
-            if (seedConfig.PlantStartObject == null)
+            if (_plantPrefab == null)
             {
-                Debug.LogError($"[PlayerPlacement] {seedConfig.name}: PlantStartObject is not assigned.", this);
+                Debug.LogError($"[{nameof(PlayerPlacement)}] Plant prefab is not assigned.", this);
                 return;
             }
 
@@ -103,7 +113,7 @@ namespace Gameplay.Player
             if (!_inventory.HasItem(id))
                 return;
 
-            Plant plant = Instantiate(seedConfig.PlantStartObject, position, Quaternion.identity);
+            Plant plant = Instantiate(_plantPrefab, position, Quaternion.identity);
             plant.Init(netId, id);
 
             GameObject instance = plant.gameObject;
@@ -113,17 +123,21 @@ namespace Gameplay.Player
                 NetworkServer.Destroy(instance);
         }
 
-        private void CleanUpGhost()
+        private void StopPlanting()
         {
-            if (_currentGhost != null)
-            {
-                Destroy(_currentGhost.gameObject);
-                _currentGhost = null;
-            }
+            CleanUpGhost();
 
             _currentSeed = null;
             IsPlanting = false;
             _canPlant = false;
+        }
+
+        private void CleanUpGhost()
+        {
+            if (_currentGhost == null) return;
+
+            Destroy(_currentGhost.gameObject);
+            _currentGhost = null;
         }
     }
 }

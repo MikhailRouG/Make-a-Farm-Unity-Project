@@ -14,15 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <Id>k__BackingField: 101
   <Name>k__BackingField: Tomato Seed
-  <Rarity>k__BackingField: 0
+  <Rarity>k__BackingField: 1
   <Price>k__BackingField: 40
   <Category>k__BackingField: 0
   <Icon>k__BackingField: {fileID: 21300000, guid: 93c95c6e84f79dd44a4b5833c291d370, type: 3}
   <Model>k__BackingField: {fileID: 0}
   <IsStackable>k__BackingField: 1
   <MaxStackSize>k__BackingField: 32
-  <GhostObject>k__BackingField: {fileID: 5517866692966445679, guid: da049d9d83f75154e93c887f48d0e10e, type: 3}
-  <PlantStartObject>k__BackingField: {fileID: 2921874841248964185, guid: 8e38d98a4c572cd4d94e4112e9c29cdd, type: 3}
   <Stages>k__BackingField:
   - {fileID: 5247171341285440238, guid: a16cf1567ae6422478918be287cc0ea9, type: 3}
   - {fileID: 8194921344609212003, guid: a8c9cbbe0b07f124bb0c85d052634263, type: 3}
@@ -31,3 +29,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e3bf31708508fe24ba68a02caf57006b, type: 2}
   <TimePerStage>k__BackingField: 5
   <Effect>k__BackingField: {fileID: 11400000, guid: 6f9cd2bb136121a478614803a1cc0c94, type: 2}
+  <MaxHealth>k__BackingField: 100
+  <DrainPerSecond>k__BackingField: 2
+  <RegenPerSecond>k__BackingField: 1
+  <RepeatEvery>k__BackingField: 60
+  <Requirements>k__BackingField: []

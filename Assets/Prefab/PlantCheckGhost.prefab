@@ -46,5 +46,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlantCheckPosition
   _confirm: {fileID: 2100000, guid: e06f8e23686a39140bd7d1eb87e1933d, type: 2}
   _reject: {fileID: 2100000, guid: 9f034ecc317fcc645a99739d927450b8, type: 2}
-  _zonePlantsRadius: 1
+  _zonePlantsRadius: 0.3
   _zoneFarmRadius: 0.1
