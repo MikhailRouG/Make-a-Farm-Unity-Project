@@ -18,6 +18,7 @@ namespace Gameplay.Player
 
         private Camera _playerCamera;
         private IInteractable _currentTarget;
+        private Highlightable _currentHighlight;
 
         public bool HasTarget { get; private set; }
         public Vector3 LookPoint { get; private set; }
@@ -39,6 +40,9 @@ namespace Gameplay.Player
         {
             if (!isLocalPlayer || _playerCamera == null) return;
 
+            // Deliberately no pointer-over-UI test: here the crosshair aims, not the
+            // mouse. The OS cursor stays wherever it was last left, and testing it
+            // would kill the target every frame it happens to rest over the HUD.
             Ray ray = new Ray(_playerCamera.transform.position, _playerCamera.transform.forward);
             Interaction(ray);
         }
@@ -47,43 +51,61 @@ namespace Gameplay.Player
         {
             if (!isLocalPlayer || _playerCamera == null) return;
 
+            if (IsPointerOverUi())
+            {
+                ClearTarget();
+                return;
+            }
+
             Ray ray = _playerCamera.ScreenPointToRay(Input.mousePosition);
             Interaction(ray);
         }
 
         public void Interaction(Ray ray)
         {
-            if (CheckMouseOnUi()) return;
-
             Debug.DrawRay(ray.origin, ray.direction * _interactDistance, Color.green);
 
             if (Physics.Raycast(ray, out RaycastHit hit, _interactDistance, _interactableMask))
             {
                 LookPoint = hit.point;
-
-                if (hit.collider.TryGetComponent(out IInteractable component))
-                {
-                    if (_currentTarget != component)
-                    {
-                        _currentTarget = component;
-                        HasTarget = true;
-                        OnHasInteraction?.Invoke(_currentTarget.InteractionPrompt);
-                    }
-
-                    return;
-                }
+                SetTarget(hit.collider);
+                return;
             }
 
             ClearTarget();
+        }
+
+        // Both lookups walk up from the collider, which often sits on a child of the
+        // prefab that owns the script and the renderers. Resolving them side by side
+        // is what keeps the outline and the prompt describing the same object.
+        private void SetTarget(Collider hitCollider)
+        {
+            IInteractable interactable = hitCollider.GetComponentInParent<IInteractable>();
+
+            if (interactable == null)
+            {
+                ClearTarget();
+                return;
+            }
+
+            SetHighlight(hitCollider.GetComponentInParent<Highlightable>());
+
+            if (_currentTarget == interactable) return;
+
+            _currentTarget = interactable;
+            HasTarget = true;
+            OnHasInteraction?.Invoke(interactable.InteractionPrompt);
         }
 
         public void TryInteract()
         {
             if (!isLocalPlayer || _currentTarget == null) return;
 
+            // A destroyed target still reads as non-null through the interface; only
+            // the Unity object comparison catches it.
             if (_currentTarget is UnityEngine.Object unityObj && unityObj == null)
             {
-                _currentTarget = null;
+                ClearTarget();
                 return;
             }
 
@@ -95,7 +117,10 @@ namespace Gameplay.Player
                     _currentTarget.Interact(gameObject);
             }
 
-            _currentTarget = null;
+            // The target is deliberately kept: the player is still looking at it. The
+            // input action is edge triggered, so holding the key cannot repeat, and
+            // dropping it here used to leave HasTarget true with no target behind it,
+            // re-firing the prompt on the next frame.
         }
 
         // The target comes from the client, so the distance is re-checked here.
@@ -114,24 +139,49 @@ namespace Gameplay.Player
                 serverTarget.Interact(gameObject);
         }
 
-        private void ClearTarget()
+        // Public so an opening UI can drop the target: Player stops driving the ray
+        // while a panel is up, which otherwise freezes the outline on whatever the
+        // player happened to be looking at when the shop opened.
+        public void ClearTarget()
         {
             if (HasTarget)
                 OnHasInteraction?.Invoke(string.Empty);
+
+            SetHighlight(null);
 
             _currentTarget = null;
             HasTarget = false;
         }
 
-        private bool CheckMouseOnUi()
+        private void SetHighlight(Highlightable next)
         {
-            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            if (_currentHighlight != next)
             {
-                ClearTarget();
-                return true;
+                if (_currentHighlight != null)
+                    _currentHighlight.SetHighlighted(false);
+
+                _currentHighlight = next;
+
+                if (_currentHighlight != null)
+                    _currentHighlight.SetHighlighted(true);
+
+                return;
             }
 
-            return false;
+            // Still the same object as last frame. It gets one poke per frame so it can
+            // notice its geometry was swapped under the outline - a growing plant
+            // replaces the very renderers the hulls hang under. Only the hovered object
+            // pays for this, which is why Highlightable has no Update of its own.
+            if (_currentHighlight != null)
+                _currentHighlight.RefreshSources();
         }
+
+        private void OnDisable()
+        {
+            SetHighlight(null);
+        }
+
+        private static bool IsPointerOverUi() =>
+            EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
     }
 }

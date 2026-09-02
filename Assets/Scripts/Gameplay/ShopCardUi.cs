@@ -10,7 +10,19 @@ public class ShopCardUi : MonoBehaviour
     [SerializeField] private Button _sellButton;
     [SerializeField] private Image _image;
     [SerializeField] private TMP_Text _nameText;
+
+    [Header("Rarity")]
     [SerializeField] private TMP_Text _rarityText;
+
+    [Tooltip("Tinted by rarity. Any Image will do: a frame, a header strip, the card background.")]
+    [SerializeField] private Image _rarityBackground;
+
+    [Tooltip("Also tint the rarity label, not just the background.")]
+    [SerializeField] private bool _tintRarityText = true;
+
+    [Tooltip("Darkens the label against the background. 1 keeps the rarity colour as is.")]
+    [SerializeField, Range(0f, 1f)] private float _rarityTextDim = 0.6f;
+
     [SerializeField] private TMP_Text _buyPriceText;
     [SerializeField] private TMP_Text _sellPriceText;
 
@@ -49,14 +61,37 @@ public class ShopCardUi : MonoBehaviour
         if (_nameText != null)
             _nameText.text = item.Name;
 
-        if (_rarityText != null)
-            _rarityText.text = item.Rarity.ToString();
+        ApplyRarity(item.Rarity);
 
         if (_buyPriceText != null)
             _buyPriceText.text = $"{item.Price}$";
 
         if (_sellPriceText != null)
             _sellPriceText.text = $"{item.Price}$";
+    }
+
+    private void ApplyRarity(ItemRarity rarity)
+    {
+        Color color = RarityColors.Of(rarity);
+
+        if (_rarityBackground != null)
+            _rarityBackground.color = color;
+
+        if (_rarityText == null)
+            return;
+
+        _rarityText.text = rarity.ToString();
+
+        // Only RGB is scaled: alpha stays as the label was authored, so a translucent
+        // rarity colour meant for the background does not fade the text with it.
+        if (_tintRarityText)
+        {
+            _rarityText.color = new Color(
+                color.r * _rarityTextDim,
+                color.g * _rarityTextDim,
+                color.b * _rarityTextDim,
+                _rarityText.color.a);
+        }
     }
 
     private void OnBuyClicked()

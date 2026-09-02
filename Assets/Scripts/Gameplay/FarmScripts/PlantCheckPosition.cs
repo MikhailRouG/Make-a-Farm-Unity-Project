@@ -20,11 +20,12 @@ namespace Gameplay.Farm
         private MeshRenderer _renderer;
         private GameObject _visual;
 
-        /// <summary>Dresses the ghost as this seed and turns it on.</summary>
+        // Null until the first material is applied to the current visual, so a fresh
+        // ghost always gets one even when its state matches the previous ghost's.
+        private bool? _shownCanPlant;
+
         public void Show(ItemSeed seed)
         {
-            // Resolved here and not in Awake: the ghost normally sits disabled in the
-            // prefab, and Awake would not have run before the first Show.
             _farmLayer = LayerMask.GetMask("Farm");
             _plantLayer = LayerMask.GetMask("Plant");
 
@@ -48,13 +49,12 @@ namespace Gameplay.Farm
 
         private void BuildVisual(ItemSeed seed)
         {
-            // The previous seed's preview has to go, or ghosts pile up inside the
-            // reused object.
             if (_visual != null)
                 Destroy(_visual);
 
             _visual = null;
             _renderer = null;
+            _shownCanPlant = null;
 
             if (seed == null || seed.Stages == null || seed.Stages.Length == 0 || seed.Stages[0] == null)
             {
@@ -83,10 +83,16 @@ namespace Gameplay.Farm
             return false;
         }
 
+        // CheckZone runs every frame while the ghost is up, and assigning Renderer
+        // .material instantiates a fresh material each time - only a real change in
+        // state is pushed through.
         private void UpdateMaterial(bool canPlant)
         {
             if (_renderer == null) return;
 
+            if (_shownCanPlant == canPlant) return;
+
+            _shownCanPlant = canPlant;
             _renderer.material = canPlant ? _confirm : _reject;
         }
 

@@ -24,6 +24,7 @@ namespace Gameplay.Farm
         private ItemSeed _seed;
         private GameObject _currentVisual;
         private Coroutine _growCoroutine;
+        private BoxCollider _collider;
 
         public event Action<float, EffectConfig> OnInitialized;
         public event Action<EffectState> OnUpdateStage;
@@ -64,12 +65,14 @@ namespace Gameplay.Farm
         private void Awake()
         {
             _database = ItemDatabase.Instance;
+            TryGetComponent(out _collider);
         }
 
         public override void OnStartClient()
         {
             base.OnStartClient();
 
+            RefreshCollider();
             TryUpdateVisual();
 
             ItemSeed seed = Seed;
@@ -197,6 +200,7 @@ namespace Gameplay.Farm
 
         private void OnStageChanged(int oldStage, int newStage)
         {
+            RefreshCollider();
             TryUpdateVisual();
 
             ItemSeed seed = Seed;
@@ -207,7 +211,21 @@ namespace Gameplay.Farm
         private void OnSeedSynced(int oldId, int newId)
         {
             _seed = null;
+            RefreshCollider();
             TryUpdateVisual();
+        }
+
+        // The harvest object spawns on top of the plant, and a ray only reports its
+        // nearest hit: while this collider is up it shadows the harvest completely.
+        // Driven off the synced stage rather than switched off in OnLastStage, which
+        // is server-only - remote clients kept aiming at the plant and got the care
+        // prompt where the host already saw the harvest.
+        private void RefreshCollider()
+        {
+            if (_collider == null)
+                return;
+
+            _collider.enabled = !IsFullyGrown;
         }
 
         [Server]
@@ -232,10 +250,11 @@ namespace Gameplay.Farm
                 Quaternion.identity
             );
 
+            RefreshCollider();
+
             if (obj.TryGetComponent(out IHarvestable component))
             {
                 component.StartHarvesting(_ownerNetId, seed.Id, _size);
-                GetComponent<BoxCollider>().enabled = false;
                 component.OnDestroyedServer += OnDestroyedPlant;
             }
             else

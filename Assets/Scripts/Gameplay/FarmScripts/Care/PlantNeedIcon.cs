@@ -37,9 +37,6 @@ namespace Gameplay.Farm
             if (_care != null)
             {
                 _care.OnChangedReqirement += OnNeedChanged;
-
-                // The hook stays silent when the incoming value matches what the
-                // object already holds, so the current state has to be read once.
                 OnNeedChanged(_care.CurrentNeed, _care.NeedsCare);
             }
 

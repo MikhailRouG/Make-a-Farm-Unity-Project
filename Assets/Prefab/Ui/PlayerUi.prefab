@@ -154,6 +154,17 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5458569037062184925, guid: a0912b37188a6a948b542bd4648832c0, type: 3}
+      propertyPath: m_text
+      value: 'Move - [WASD]
+
+        Use item - [E]
+
+        Plant - [Left Mouse
+        Button]
+
+        Cursor [Y/ RMB]'
+      objectReference: {fileID: 0}
     - target: {fileID: 6287809272658649692, guid: a0912b37188a6a948b542bd4648832c0, type: 3}
       propertyPath: m_Name
       value: InterfaceCanvas

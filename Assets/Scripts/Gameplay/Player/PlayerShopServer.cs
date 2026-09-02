@@ -57,13 +57,16 @@ namespace Gameplay.Player
             if (item == null)
                 return;
 
-            if (!_inventory.TryGetItemSize(itemId, out float size))
+            // Slots store kilograms, while Price is set per common-weight item:
+            // paying out Price * kilograms would sell everything for pennies.
+            if (!_inventory.TryGetItemSize(itemId, out float weight))
                 return;
 
             if (!_inventory.TryRemoveItem(itemId))
                 return;
 
-            int payout = Mathf.RoundToInt(item.Price * size);
+            float scale = ItemWeight.ResolveScale(item, weight);
+            int payout = Mathf.Max(1, Mathf.RoundToInt(item.Price * scale));
             _inventory.TryAddMoney(payout);
         }
 

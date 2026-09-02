@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: RarityColors
   m_EditorClassIdentifier: Assembly-CSharp::RarityColors
   _colors:
-  - {r: 0.33962262, g: 0.33962262, b: 0.33962262, a: 0.39215687}
-  - {r: 0, g: 0, b: 1, a: 0.39215687}
+  - {r: 0.5377358, g: 0.5377358, b: 0.5377358, a: 1}
+  - {r: 0.2753649, g: 0.2753649, b: 0.6415094, a: 1}

@@ -11,12 +11,7 @@ public class ItemDatabase : ScriptableObject
         get
         {
             if (_instance == null)
-            {
                 _instance = Resources.Load<ItemDatabase>("ItemDatabase");
-
-                if (_instance == null)
-                    Debug.LogError("ItemDatabase.asset not found in Resources!");
-            }
 
             return _instance;
         }
@@ -26,6 +21,7 @@ public class ItemDatabase : ScriptableObject
 
     private Dictionary<int, ItemConfig> _map;
     private Dictionary<ItemType, List<ItemConfig>> _byCategory;
+    private Dictionary<int, ItemContainer> _emptiedBy;
 
     // A ScriptableObject and its dictionaries outlive Play Mode, so the cache is
     // dropped on every run — otherwise it stays stale after Rebuild Database.
@@ -42,12 +38,14 @@ public class ItemDatabase : ScriptableObject
     {
         _map = null;
         _byCategory = null;
+        _emptiedBy = null;
     }
 
     public void Init()
     {
         _map = new Dictionary<int, ItemConfig>();
         _byCategory = new Dictionary<ItemType, List<ItemConfig>>();
+        _emptiedBy = new Dictionary<int, ItemContainer>();
 
         if (items == null)
             return;
@@ -77,6 +75,33 @@ public class ItemDatabase : ScriptableObject
             }
 
             list.Add(item);
+
+            IndexFills(item);
+        }
+    }
+
+    // A container only ever declares how it is filled (bucket + Water -> full bucket).
+    // The way back is that same table read backwards: whatever lists this item as a
+    // fill result is what it empties into, so the empty form lives in one asset only.
+    private void IndexFills(ItemConfig item)
+    {
+        if (item is not ItemContainer container || container.Fills == null)
+            return;
+
+        foreach (RefillRecipe recipe in container.Fills)
+        {
+            if (recipe.Result == null)
+                continue;
+
+            if (_emptiedBy.TryGetValue(recipe.Result.Id, out ItemContainer existing))
+            {
+                Debug.LogError(
+                    $"ItemDatabase: '{recipe.Result.name}' is filled by both '{existing.name}' " +
+                    $"and '{container.name}' — it cannot empty back into two containers.",
+                    recipe.Result);
+            }
+
+            _emptiedBy[recipe.Result.Id] = container;
         }
     }
 
@@ -89,6 +114,17 @@ public class ItemDatabase : ScriptableObject
 
         Debug.LogError($"ItemDatabase: item with ID {id} not found!");
         return null;
+    }
+
+    /// <summary>
+    /// The container a filled item empties back into, if any container fills into it.
+    /// False for one-shot items - a handful of fertiliser leaves nothing behind.
+    /// </summary>
+    public bool TryGetEmptied(int filledId, out ItemContainer empty)
+    {
+        if (_emptiedBy == null) Init();
+
+        return _emptiedBy.TryGetValue(filledId, out empty);
     }
 
     public IReadOnlyList<ItemConfig> GetByCategory(ItemType category)

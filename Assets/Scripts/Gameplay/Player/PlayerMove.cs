@@ -14,7 +14,6 @@ namespace Gameplay.Player
         [SerializeField, Range(0f, 1f)] private float airControl = 0.35f;
 
         [Header("Rotation")]
-        [SerializeField] private float rotationSpeed = 10f;
         [SerializeField] private float firstPersonRotationSpeed = 25f;
 
         [Header("Jump & Gravity")]
@@ -167,15 +166,6 @@ namespace Gameplay.Player
             // otherwise reach other clients as rotation stutter.
             Quaternion target = Quaternion.LookRotation(forward, Vector3.up);
             transform.rotation = Quaternion.Slerp(transform.rotation, target, SmoothFactor(firstPersonRotationSpeed));
-        }
-
-        public void RotationOnThirdPersonCamera()
-        {
-            if (!isLocalPlayer) return;
-            if (moveInput.sqrMagnitude < 0.0001f) return;
-
-            Quaternion target = Quaternion.LookRotation(moveInput, Vector3.up);
-            transform.rotation = Quaternion.Slerp(transform.rotation, target, SmoothFactor(rotationSpeed));
         }
 
         // Framerate-independent smoothing: the rotation reaches its target in the

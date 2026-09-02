@@ -35,14 +35,7 @@ namespace Gameplay.Farm
             }
         }
 
-        public string InteractionPrompt
-        {
-            get
-            {
-                PlantRequirement overdue = FirstOverdueRequirement();
-                return overdue != null ? overdue.Prompt : string.Empty;
-            }
-        }
+        public string InteractionPrompt => string.Empty;
 
         public PlantRequirement CurrentNeed => FirstOverdueRequirement();
 
@@ -117,7 +110,23 @@ namespace Gameplay.Farm
             RefreshOverdueMask(seed);
 
             if (requirement.ConsumeItem)
-                inventory.RemoveItemFromSlot(slotIndex, 1);
+                ConsumeCareItem(inventory, slotIndex, slot.ItemId);
+        }
+
+        // What is left after use belongs to the item, not to the requirement: a
+        // watering can is refillable and comes back as an empty can, while a handful
+        // of fertiliser is simply gone.
+        [Server]
+        private void ConsumeCareItem(Inventory inventory, int slotIndex, int itemId)
+        {
+            ItemDatabase database = ItemDatabase.Instance;
+
+            if (database != null &&
+                database.TryGetEmptied(itemId, out ItemContainer empty) &&
+                inventory.TryReplaceInSlot(slotIndex, empty.Id))
+                return;
+
+            inventory.RemoveItemFromSlot(slotIndex, 1);
         }
 
         [Server]

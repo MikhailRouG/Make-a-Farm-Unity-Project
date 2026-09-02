@@ -435,6 +435,17 @@
                 },
                 {
                     "name": "",
+                    "id": "388a365c-7d3b-4f0f-a04f-5a0491aa209a",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "CursorVisable",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "8219810e-6d4a-4c09-8b72-865e65883906",
                     "path": "<Keyboard>/leftShift",
                     "interactions": "",

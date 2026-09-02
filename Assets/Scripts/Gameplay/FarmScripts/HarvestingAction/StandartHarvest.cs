@@ -107,7 +107,9 @@ namespace Gameplay.Farm
                 return;
             }
 
-            if (seed.HarvestItem[0] == null)
+            ItemConfig harvestItem = seed.HarvestItem[0];
+
+            if (harvestItem == null)
             {
                 Debug.LogError($"[StandartHarvest] {seed.name}: harvest item is not assigned.", this);
                 return;
@@ -118,7 +120,7 @@ namespace Gameplay.Farm
 
             // On a full inventory the harvest stays in the world so it can be
             // collected later, instead of being destroyed for nothing.
-            if (!inventory.TryAddItem(seed.HarvestItem[0].Id, 1, _size))
+            if (!inventory.TryAddItem(harvestItem.Id, 1, ItemWeight.Resolve(harvestItem, _size)))
                 return;
 
             OnDestroyedServer?.Invoke();

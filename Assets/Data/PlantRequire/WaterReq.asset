@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: WaterReq
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Farm.CareRequirement
   <Prompt>k__BackingField: Water
-  <RequiredItem>k__BackingField: {fileID: 11400000, guid: f9bb3bd1b6e127145875ee4c5c3f4618, type: 2}
+  <RequiredItem>k__BackingField: {fileID: 11400000, guid: 0d4b5681efbeb2640821a35411d54404, type: 2}
   <FirstDueAfter>k__BackingField: 0
   <RepeatEvery>k__BackingField: 60
   <DamagePerTick>k__BackingField: 5
   <HealthRestored>k__BackingField: 25
-  <ConsumeItem>k__BackingField: 0
+  <ConsumeItem>k__BackingField: 1

@@ -108,5 +108,9 @@ public class Inventory : NetworkBehaviour
     public bool RemoveItemFromSlot(int slotIndex, int amount) => _model.RemoveFromSlot(slotIndex, amount);
 
     [Server]
+    public bool TryReplaceInSlot(int slotIndex, int newItemId) =>
+        _model.TryReplaceInSlot(slotIndex, newItemId);
+
+    [Server]
     public InventorySlot GetSlotServer(int slotIndex) => _model.GetSlot(slotIndex);
 }

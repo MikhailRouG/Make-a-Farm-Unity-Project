@@ -142,6 +142,34 @@ public sealed class InventoryModel
         return remaining <= 0;
     }
 
+    /// <summary>
+    /// Swaps the item in one slot for another, keeping the slot and its weight. One
+    /// list write instead of a remove followed by an add: the item cannot land in a
+    /// different slot, and nothing is lost in between if the inventory is full.
+    /// </summary>
+    public bool TryReplaceInSlot(int index, int newItemId)
+    {
+        if (!IsValidIndex(index))
+            return false;
+
+        InventorySlot slot = _slots[index];
+
+        if (slot.IsEmpty)
+            return false;
+
+        // A slot holds one kind of item, so a stack has nothing to swap into:
+        // replacing one unit of it would quietly destroy the rest.
+        if (slot.Amount != 1)
+            return false;
+
+        if (!_rules.TryGet(newItemId, out _))
+            return false;
+
+        _slots[index] = new InventorySlot(newItemId, 1, slot.Weight);
+
+        return true;
+    }
+
     public bool RemoveFromSlot(int index, int amount)
     {
         if (!IsValidIndex(index))

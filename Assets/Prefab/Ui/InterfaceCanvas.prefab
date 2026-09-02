@@ -1488,22 +1488,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8164696157552050755, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
-      propertyPath: m_Color.a
-      value: 0.19607843
-      objectReference: {fileID: 0}
-    - target: {fileID: 8164696157552050755, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
-      propertyPath: m_Color.b
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8164696157552050755, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
-      propertyPath: m_Color.g
-      value: 0.6369048
-      objectReference: {fileID: 0}
-    - target: {fileID: 8164696157552050755, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
-      propertyPath: m_Color.r
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 8724909676558106781, guid: 334d4efa9b14a7f4b93577b148272d46, type: 3}
       propertyPath: m_Name
       value: Slot

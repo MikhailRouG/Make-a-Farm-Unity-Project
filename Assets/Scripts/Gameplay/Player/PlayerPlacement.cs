@@ -34,7 +34,7 @@ namespace Gameplay.Player
             CleanUpGhost();
         }
 
-        private void Update()
+        private void LateUpdate()
         {
             if (!isLocalPlayer || !IsPlanting) return;
             if (_currentGhost == null || _interaction == null) return;

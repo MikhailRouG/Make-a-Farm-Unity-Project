@@ -95,6 +95,48 @@ public class InventoryModelTests
     }
 
     [Test]
+    public void TryReplaceInSlot_SwapsTheItemAndKeepsTheSlotAndWeight()
+    {
+        var slots = EmptySlots(2);
+        slots[1] = new InventorySlot(Unique, 1, 1.7f);
+        var model = new InventoryModel(slots, new FakeRules());
+
+        Assert.IsTrue(model.TryReplaceInSlot(1, Stackable));
+
+        Assert.IsTrue(slots[0].IsEmpty, "the swap must not move the item to another slot");
+        Assert.AreEqual(Stackable, slots[1].ItemId);
+        Assert.AreEqual(1, slots[1].Amount);
+        Assert.AreEqual(1.7f, slots[1].Weight);
+    }
+
+    [Test]
+    public void TryReplaceInSlot_RefusesAStack()
+    {
+        var slots = EmptySlots(1);
+        var model = new InventoryModel(slots, new FakeRules());
+        model.TryAdd(Stackable, 2);
+
+        Assert.IsFalse(model.TryReplaceInSlot(0, Unique));
+
+        Assert.AreEqual(Stackable, slots[0].ItemId, "a refused swap must leave the stack alone");
+        Assert.AreEqual(2, slots[0].Amount);
+    }
+
+    [Test]
+    public void TryReplaceInSlot_RefusesAnEmptySlotAndAnUnknownItem()
+    {
+        var slots = EmptySlots(2);
+        slots[1] = new InventorySlot(Unique, 1, 1f);
+        var model = new InventoryModel(slots, new FakeRules());
+
+        Assert.IsFalse(model.TryReplaceInSlot(0, Stackable), "nothing to replace");
+        Assert.IsFalse(model.TryReplaceInSlot(1, 99), "unknown item has no stack rule");
+
+        Assert.IsTrue(slots[0].IsEmpty);
+        Assert.AreEqual(Unique, slots[1].ItemId);
+    }
+
+    [Test]
     public void WithAmount_KeepsIdAndWeight()
     {
         var slot = new InventorySlot(Stackable, 5, 1.7f);

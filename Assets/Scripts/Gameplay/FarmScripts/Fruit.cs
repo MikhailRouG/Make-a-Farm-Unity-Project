@@ -64,7 +64,7 @@ namespace Gameplay.Farm
 
             if (interactor.TryGetComponent(out Inventory inventory))
             {
-                if (inventory.TryAddItem(_item.Id, 1, _size))
+                if (inventory.TryAddItem(_item.Id, 1, ItemWeight.Resolve(_item, _size)))
                 {
                     NetworkServer.Destroy(gameObject);
                 }
